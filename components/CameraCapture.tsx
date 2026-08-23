@@ -1,46 +1,51 @@
-// CameraCapture component placeholder for snapping homework
-import React, { useRef, useState } from 'react';
+'use client';
+import { Camera, Image as ImageIcon } from 'lucide-react';
 
-export default function CameraCapture({ onCapture }) {
-  const videoRef = useRef(null);
-  const [hasPermission, setHasPermission] = useState(false);
+interface CameraCaptureProps {
+  image: string | null;
+  setImage: (img: string | null) => void;
+}
 
-  const startCamera = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        setHasPermission(true);
-      }
-    } catch (err) {
-      console.error('Camera access denied', err);
+export default function CameraCapture({ image, setImage }: CameraCaptureProps) {
+  const handleCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => setImage(reader.result as string);
+      reader.readAsDataURL(file);
     }
   };
 
-  const capture = () => {
-    if (!videoRef.current) return;
-    const canvas = document.createElement('canvas');
-    const video = videoRef.current;
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    canvas.toBlob((blob) => {
-      if (blob) onCapture(blob);
-    }, 'image/jpeg');
-  };
-
   return (
-    <div className="flex flex-col items-center">
-      <video ref={videoRef} autoPlay muted className="w-full max-w-md" />
-      <div className="mt-4 space-x-2">
-        <button onClick={startCamera} className="px-4 py-2 bg-blue-600 text-white rounded">
-          Start Camera
-        </button>
-        <button onClick={capture} disabled={!hasPermission} className="px-4 py-2 bg-green-600 text-white rounded">
-          Capture
-        </button>
-      </div>
+    <div className="bg-white rounded-xl shadow-sm border p-4 mb-6">
+      <h2 className="text-lg font-bold mb-4 flex items-center">
+        <ImageIcon className="mr-2 text-indigo-500" /> Snap Homework
+      </h2>
+      
+      {!image ? (
+        <label className="flex flex-col items-center justify-center w-full h-40 bg-indigo-50 border-2 border-indigo-300 border-dashed rounded-xl cursor-pointer hover:bg-indigo-100 transition">
+          <Camera size={40} className="text-indigo-500 mb-2" />
+          <span className="font-semibold text-indigo-700">Open Camera</span>
+          <input 
+            type="file" 
+            accept="image/*" 
+            capture="environment" 
+            className="hidden" 
+            onChange={handleCapture} 
+          />
+        </label>
+      ) : (
+        <div className="relative">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={image} alt="Homework" className="w-full h-48 object-cover rounded-xl border" />
+          <button 
+            onClick={() => setImage(null)}
+            className="absolute top-2 right-2 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-md"
+          >
+            Retake
+          </button>
+        </div>
+      )}
     </div>
   );
 }
