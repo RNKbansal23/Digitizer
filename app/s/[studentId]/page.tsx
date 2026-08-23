@@ -1,14 +1,45 @@
-import { User, CalendarX, BookOpen } from 'lucide-react';
-// import { supabase } from '@/lib/supabase'; // Will use this to fetch live data later
+import { User, CalendarX, BookOpen, CheckCircle2 } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
-export default function ParentDashboard({ params }: { params: { studentId: string } }) {
-  // Mock Data: In reality, you'd fetch student status using params.studentId from Supabase
-  const isAbsent = false; 
-  const studentName = "Aarav Patel";
-  const homeworkImg = null; // Normally a URL from your DB
+// Mock student mapping (Normally you'd fetch this from a 'students' table)
+const STUDENT_NAMES: Record<string, string> = {
+  '1': 'Aarav Patel',
+  '2': 'Diya Sharma',
+  '3': 'Kabir Singh',
+  '4': 'Ananya Verma',
+};
+
+export default async function ParentDashboard({ params }: { params: { studentId: string } }) {
+  const studentName = STUDENT_NAMES[params.studentId] || "Student";
+  
+  // 1. Fetch the absolute latest homework log for Class 5A
+  const { data: logData } = await supabase
+    .from('daily_logs')
+    .select('*')
+    .eq('class_id', '5A')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single();
+
+  // 2. Check if this specific student is in the absences table for this log
+  let isAbsent = false;
+  if (logData) {
+    const { data: absenceData } = await supabase
+      .from('absences')
+      .select('id')
+      .eq('student_id', params.studentId)
+      .eq('log_id', logData.id)
+      .maybeSingle();
+      
+    if (absenceData) {
+      isAbsent = true;
+    }
+  }
+
+  const homeworkImg = logData?.homework_base64 || null;
 
   return (
-    <main className="min-h-screen bg-gray-100 p-4 flex flex-col items-center">
+    <main className="min-h-screen bg-gray-100 p-4 flex flex-col items-center pb-12">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border overflow-hidden mt-6">
         
         {/* Header */}
@@ -23,7 +54,7 @@ export default function ParentDashboard({ params }: { params: { studentId: strin
         <div className="p-6">
           {/* Attendance Status */}
           <div className={`p-4 rounded-xl mb-6 flex items-center ${isAbsent ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-green-50 text-green-700 border border-green-200'}`}>
-            <CalendarX className="mr-3" />
+            {isAbsent ? <CalendarX className="mr-3" /> : <CheckCircle2 className="mr-3" />}
             <div>
               <p className="font-bold">Today&apos;s Status</p>
               <p className="text-sm">{isAbsent ? 'Marked Absent' : 'Present in Class'}</p>
