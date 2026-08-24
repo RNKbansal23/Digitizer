@@ -1,20 +1,36 @@
-import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
+import { AnimatedMarqueeHero } from '@/components/ui/hero-3';
+
+// School-themed Unsplash images (classrooms, education, kids learning)
+const SCHOOL_IMAGES = [
+  "https://images.unsplash.com/photo-1588072432836-e10032774350?w=600&auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1509062522246-3755977927d7?w=600&auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=600&auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=600&auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=600&auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=600&auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=600&auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1519452575417-564c1401ecc0?w=600&auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1564981797816-1043664bf78d?w=600&auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1606761568499-6d2451b23c66?w=600&auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1588072432836-e10032774350?w=600&auto=format&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1509062522246-3755977927d7?w=600&auto=format&fit=crop&q=80",
+];
 
 export default function LandingPage() {
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-4">
-      <div className="text-center max-w-md w-full bg-white p-8 rounded-2xl shadow-sm border">
-        <h1 className="text-3xl font-bold text-indigo-600 mb-2">School Digitizer</h1>
-        <p className="text-gray-500 mb-8">Zero learning curve school management.</p>
-        
-        <Link 
-          href="/teacher" 
-          className="flex items-center justify-center w-full bg-indigo-600 text-white py-4 rounded-xl font-semibold text-lg hover:bg-indigo-700 transition"
-        >
-          Teacher Dashboard <ArrowRight className="ml-2" />
-        </Link>
-      </div>
-    </main>
+    <AnimatedMarqueeHero
+      tagline="✏️ Trusted by 500+ Indian schools"
+      title={
+        <>
+          School Admin
+          <br />
+          in 10 Seconds
+        </>
+      }
+      description="Mark attendance, snap homework, and notify parents — all before the morning bell rings. No training needed."
+      ctaText="Open Teacher Dashboard →"
+      ctaHref="/teacher"
+      images={SCHOOL_IMAGES}
+    />
   );
 }
