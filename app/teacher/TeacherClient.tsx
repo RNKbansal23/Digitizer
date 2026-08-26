@@ -90,15 +90,16 @@ export default function TeacherClient({ schoolId, classId, teacherName, schoolNa
       body: JSON.stringify({ ...announcement, date: new Date().toISOString(), class_id: classId, school_id: schoolId })
     });
     if (res.ok) {
-      const msg = `📢 *Class ${classId} Announcement: ${announcement.type}*%0A%0A${announcement.message}%0A%0A- ${teacherName} (Class Teacher)`;
+      const msg = `📢 *Notice: ${announcement.type}*%0A%0A${announcement.message}%0A%0A- On behalf of ${schoolName}%0A${teacherName}, Class Teacher of Class ${classId}`;
       window.open(`https://wa.me/?text=${msg}`, '_blank');
       setAnnouncement({ type: 'PTM', message: '' });
     }
   };
 
   return (
-    <main className="max-w-md mx-auto p-4 pb-24">
-      <header className="mb-6 mt-4 flex justify-between items-start">
+    <div className="min-h-screen bg-gray-50/50 py-8 px-4">
+      <main className="max-w-2xl mx-auto p-8 bg-white shadow-xl shadow-indigo-100/50 rounded-[2rem] border border-gray-100 pb-28">
+        <header className="mb-8 mt-2 flex justify-between items-start">
         <div>
           <h1 className="text-2xl font-black text-gray-900">Class {classId}</h1>
           <p className="text-indigo-600 font-bold text-sm">{schoolName}</p>
@@ -175,6 +176,7 @@ export default function TeacherClient({ schoolId, classId, teacherName, schoolNa
           </form>
         </div>
       )}
-    </main>
+      </main>
+    </div>
   );
 }
