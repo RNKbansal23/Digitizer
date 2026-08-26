@@ -5,9 +5,12 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'School Digitizer',
-  description: 'Zero-friction school management',
+  title: 'School Saathi',
+  description: 'Zero-friction multi-tenant school management',
   manifest: '/manifest.json',
+}
+
+export const viewport = {
   themeColor: '#4f46e5',
 }
 

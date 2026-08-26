@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server';
 import { Users, BookOpen, LogOut, Building } from 'lucide-react';
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 
 export default async function PrincipalDashboard() {
   const supabase = createClient();
@@ -91,11 +92,16 @@ export default async function PrincipalDashboard() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {classes.map((c, i) => (
-                  <div key={i} className="border p-4 rounded-xl flex flex-col items-start bg-white hover:border-indigo-300 transition-colors">
-                    <span className="bg-indigo-100 text-indigo-800 font-bold px-3 py-1 rounded-full text-sm mb-2">Class {c.class_id}</span>
-                    <span className="font-medium text-gray-800">{c.name}</span>
-                    <span className="text-xs text-gray-500 mt-1">Class Teacher</span>
-                  </div>
+                  <Link href={`/principal/class/${c.class_id}`} key={i} className="block">
+                    <div className="border p-4 rounded-xl flex flex-col items-start bg-white hover:border-indigo-500 hover:shadow-md cursor-pointer transition-all h-full">
+                      <span className="bg-indigo-100 text-indigo-800 font-bold px-3 py-1 rounded-full text-sm mb-2">Class {c.class_id}</span>
+                      <span className="font-medium text-gray-800">{c.name}</span>
+                      <span className="text-xs text-gray-500 mt-1">Class Teacher</span>
+                      <div className="mt-4 text-sm font-semibold text-indigo-600 flex items-center">
+                        Manage Class &rarr;
+                      </div>
+                    </div>
+                  </Link>
                 ))}
               </div>
             )}
