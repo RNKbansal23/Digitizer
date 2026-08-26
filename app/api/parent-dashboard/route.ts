@@ -24,6 +24,7 @@ export async function GET(request: Request) {
       .from('daily_logs')
       .select('*')
       .eq('class_id', student.class_id)
+      .eq('school_id', student.school_id)
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle();
@@ -45,6 +46,7 @@ export async function GET(request: Request) {
       .from('announcements')
       .select('*')
       .eq('class_id', student.class_id)
+      .eq('school_id', student.school_id)
       .order('created_at', { ascending: false })
       .limit(1);
 

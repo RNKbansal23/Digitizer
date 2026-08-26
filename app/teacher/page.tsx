@@ -1,169 +1,31 @@
-'use client';
-import { useState, useEffect } from 'react';
-import StudentList from '@/components/StudentList';
-import CameraCapture from '@/components/CameraCapture';
-import { CheckCircle2, UserPlus, Megaphone, Send } from 'lucide-react';
+import { createClient } from '@/utils/supabase/server';
+import { redirect } from 'next/navigation';
+import TeacherClient from './TeacherClient';
 
-interface Student {
-  id: string;
-  name: string;
-  roll: number;
-  parent_phone: string;
-}
+export default async function TeacherDashboardServer() {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/login');
 
-export default function TeacherDashboard() {
-  const [students, setStudents] = useState<Student[]>([]);
-  const [absentIds, setAbsentIds] = useState<string[]>([]);
-  const [homeworkImage, setHomeworkImage] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [activeTab, setActiveTab] = useState<'attendance' | 'students' | 'announcements'>('attendance');
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('class_id, name, school_id, schools(name)')
+    .eq('id', user.id)
+    .single();
 
-  // New Student Form State
-  const [newStudent, setNewStudent] = useState({ name: '', roll: '', parent_phone: '' });
-  
-  // Announcement State
-  const [announcement, setAnnouncement] = useState({ type: 'PTM', message: '' });
+  if (!profile || !profile.school_id || !profile.class_id) {
+    return <div className="p-8 text-center text-red-500 font-bold">Profile misconfigured. Missing class or school assignment.</div>;
+  }
 
-  useEffect(() => {
-    fetch('/api/students?class_id=5A')
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) setStudents(data.students);
-      });
-  }, []);
-
-  const toggleAbsent = (id: string) => {
-    setAbsentIds((prev) => prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]);
-  };
-
-  const submitLog = async () => {
-    setIsSubmitting(true);
-    try {
-      const res = await fetch('/api/submit-log', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ absentIds, homeworkImage, date: new Date().toISOString() })
-      });
-      if (res.ok) {
-        // Generate WhatsApp broadcast link (wa.me)
-        const absentNames = students.filter(s => absentIds.includes(s.id)).map(s => s.name).join(', ') || 'None';
-        const msg = `Good Morning Parents (Class 5A)!%0A%0AToday's attendance is marked.%0AAbsentees: ${absentNames}%0A%0AHomework has been uploaded to the Parent Dashboard.`;
-        
-        // In a real broadcast, you'd have a WhatsApp Group link, or use the API.
-        // For zero-cost frontend approach, we open a WhatsApp prefilled message to a group/number.
-        window.open(`https://wa.me/?text=${msg}`, '_blank');
-        
-        setAbsentIds([]);
-        setHomeworkImage(null);
-      } else {
-        alert('Error submitting log.');
-      }
-    } catch (error) {
-      alert('Error submitting log.');
-    }
-    setIsSubmitting(false);
-  };
-
-  const addStudent = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const res = await fetch('/api/students', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...newStudent, class_id: '5A' })
-    });
-    if (res.ok) {
-      const data = await res.json();
-      setStudents([...students, data.student].sort((a, b) => a.roll - b.roll));
-      setNewStudent({ name: '', roll: '', parent_phone: '' });
-      alert('Student Added!');
-    }
-  };
-
-  const sendAnnouncement = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const res = await fetch('/api/announcements', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...announcement, date: new Date().toISOString(), class_id: '5A' })
-    });
-    if (res.ok) {
-      const msg = `📢 *Class 5A Announcement: ${announcement.type}*%0A%0A${announcement.message}%0A%0A- Class Teacher`;
-      window.open(`https://wa.me/?text=${msg}`, '_blank');
-      setAnnouncement({ type: 'PTM', message: '' });
-    }
-  };
+  const schoolData = Array.isArray(profile.schools) ? profile.schools[0] : profile.schools;
+  const schoolName = schoolData?.name || 'School';
 
   return (
-    <main className="max-w-md mx-auto p-4 pb-24">
-      <header className="mb-6 mt-4">
-        <h1 className="text-2xl font-black text-gray-900">Class 5-A</h1>
-        <p className="text-gray-500 text-sm">Today&apos;s Date: {new Date().toLocaleDateString()}</p>
-      </header>
-
-      {/* Tabs */}
-      <div className="flex space-x-2 mb-6 overflow-x-auto pb-2">
-        <button onClick={() => setActiveTab('attendance')} className={`px-4 py-2 rounded-full whitespace-nowrap ${activeTab === 'attendance' ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-700'}`}>Attendance</button>
-        <button onClick={() => setActiveTab('students')} className={`px-4 py-2 rounded-full whitespace-nowrap ${activeTab === 'students' ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-700'}`}>Manage Students</button>
-        <button onClick={() => setActiveTab('announcements')} className={`px-4 py-2 rounded-full whitespace-nowrap ${activeTab === 'announcements' ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-700'}`}>Announcements</button>
-      </div>
-
-      {activeTab === 'attendance' && (
-        <>
-          <StudentList students={students} absentIds={absentIds} toggleAbsent={toggleAbsent} />
-          <CameraCapture image={homeworkImage} setImage={setHomeworkImage} />
-
-          <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t flex justify-center z-10">
-            <button
-              onClick={submitLog}
-              disabled={isSubmitting || !homeworkImage}
-              className="w-full max-w-md flex items-center justify-center bg-green-600 text-white py-4 rounded-xl font-bold text-lg disabled:opacity-50 disabled:bg-gray-400"
-            >
-              {isSubmitting ? 'Sending...' : <><CheckCircle2 className="mr-2" /> Notify Parents (WhatsApp)</>}
-            </button>
-          </div>
-        </>
-      )}
-
-      {activeTab === 'students' && (
-        <div className="bg-white rounded-xl shadow-sm border p-4">
-          <h2 className="text-lg font-bold mb-4 flex items-center"><UserPlus className="mr-2 text-indigo-500" /> Add New Student</h2>
-          <form onSubmit={addStudent} className="space-y-4">
-            <input type="text" placeholder="Student Name" required value={newStudent.name} onChange={e => setNewStudent({...newStudent, name: e.target.value})} className="w-full border p-3 rounded-lg bg-gray-50" />
-            <input type="number" placeholder="Roll Number" required value={newStudent.roll} onChange={e => setNewStudent({...newStudent, roll: e.target.value})} className="w-full border p-3 rounded-lg bg-gray-50" />
-            <input type="tel" placeholder="Parent WhatsApp Number (e.g. 919876543210)" required value={newStudent.parent_phone} onChange={e => setNewStudent({...newStudent, parent_phone: e.target.value})} className="w-full border p-3 rounded-lg bg-gray-50" />
-            <button type="submit" className="w-full bg-indigo-600 text-white py-3 rounded-lg font-bold">Add Student</button>
-          </form>
-          
-          <div className="mt-8">
-            <h3 className="font-bold mb-3 text-gray-700">Enrolled Students ({students.length})</h3>
-            <ul className="space-y-2">
-              {students.map(s => (
-                <li key={s.id} className="p-3 border rounded-lg bg-gray-50 flex justify-between">
-                  <span>{s.roll}. {s.name}</span>
-                  <span className="text-gray-500 text-sm">+{s.parent_phone}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      )}
-
-      {activeTab === 'announcements' && (
-        <div className="bg-white rounded-xl shadow-sm border p-4">
-          <h2 className="text-lg font-bold mb-4 flex items-center"><Megaphone className="mr-2 text-orange-500" /> Send Announcement</h2>
-          <form onSubmit={sendAnnouncement} className="space-y-4">
-            <select value={announcement.type} onChange={e => setAnnouncement({...announcement, type: e.target.value})} className="w-full border p-3 rounded-lg bg-gray-50 font-semibold">
-              <option value="PTM">Parents Teacher Meeting (PTM)</option>
-              <option value="Holiday">School Holiday</option>
-              <option value="General">General Notice</option>
-            </select>
-            <textarea placeholder="Type your message here..." required rows={4} value={announcement.message} onChange={e => setAnnouncement({...announcement, message: e.target.value})} className="w-full border p-3 rounded-lg bg-gray-50 resize-none" />
-            <button type="submit" className="w-full bg-green-600 text-white py-3 rounded-lg font-bold flex items-center justify-center">
-              <Send className="mr-2" size={20} /> Send via WhatsApp
-            </button>
-          </form>
-        </div>
-      )}
-    </main>
+    <TeacherClient 
+      schoolId={profile.school_id} 
+      classId={profile.class_id}
+      teacherName={profile.name}
+      schoolName={schoolName}
+    />
   );
 }
