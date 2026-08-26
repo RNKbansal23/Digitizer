@@ -2,7 +2,7 @@
 import { UserX } from 'lucide-react';
 
 interface StudentListProps {
-  students: { id: string; name: string; roll: number }[];
+  students: { id: string; name: string; roll: number; parent_phone: string }[];
   absentIds: string[];
   toggleAbsent: (id: string) => void;
 }
