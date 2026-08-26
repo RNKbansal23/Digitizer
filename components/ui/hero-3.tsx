@@ -42,7 +42,7 @@ export const AnimatedMarqueeHero: React.FC<AnimatedMarqueeHeroProps> = ({
   images,
   className,
 }) => {
-  const FADE_IN_ANIMATION_VARIANTS = {
+  const FADE_IN_ANIMATION_VARIANTS: any = {
     hidden: { opacity: 0, y: 10 },
     show: {
       opacity: 1,
