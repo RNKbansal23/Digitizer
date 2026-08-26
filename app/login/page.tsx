@@ -32,24 +32,24 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-sm border">
+    <main className="min-h-screen bg-[#F5F7FF] flex flex-col items-center justify-center p-4 font-sans text-gray-800">
+      <div className="w-full max-w-md bg-white p-8 rounded-2xl border border-gray-200">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-indigo-600 mb-2">School Saathi Portal</h1>
+          <h1 className="text-2xl font-extrabold text-gray-900 mb-2">School Saathi Portal</h1>
           <p className="text-gray-500">Sign in to manage your school or class.</p>
         </div>
 
         {error && (
-          <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-6 text-sm border border-red-200">
+          <div className="bg-red-50 text-red-600 p-4 rounded-xl mb-6 text-sm border border-red-200 font-medium">
             {error}
           </div>
         )}
 
         <form onSubmit={handleLogin} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
                 <Mail size={18} />
               </div>
               <input
@@ -57,16 +57,16 @@ export default function LoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-10 pr-3 py-3 border rounded-xl bg-gray-50 focus:ring-2 focus:ring-indigo-500 outline-none"
+                className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-200 min-h-[44px]"
                 placeholder="teacher@school.com"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Password</label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
                 <KeyRound size={18} />
               </div>
               <input
@@ -74,7 +74,7 @@ export default function LoginPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-10 pr-3 py-3 border rounded-xl bg-gray-50 focus:ring-2 focus:ring-indigo-500 outline-none"
+                className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-200 min-h-[44px]"
                 placeholder="••••••••"
               />
             </div>
@@ -83,7 +83,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold mt-4 hover:bg-indigo-700 transition-colors disabled:opacity-70"
+            className="w-full bg-[#4F46E5] text-white py-3.5 rounded-xl font-bold mt-4 hover:bg-indigo-700 transition-all duration-200 active:scale-[0.97] disabled:opacity-70 disabled:transform-none min-h-[44px]"
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </button>

@@ -25,12 +25,12 @@ export default async function PrincipalClassView({ params }: { params: { classId
 
   return (
     <div>
-      <div className="bg-white border-b sticky top-0 z-50">
-        <div className="max-w-md mx-auto p-4 flex items-center">
-          <Link href="/principal" className="text-gray-500 hover:text-indigo-600 transition-colors flex items-center text-sm font-medium">
-            <ArrowLeft size={16} className="mr-1" /> Back to Dashboard
+      <div className="bg-[#F5F7FF]/90 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50">
+        <div className="max-w-2xl mx-auto p-4 flex items-center">
+          <Link href="/principal" className="text-gray-500 hover:text-indigo-600 transition-colors flex items-center text-sm font-bold active:scale-[0.97]">
+            <ArrowLeft size={16} className="mr-1.5" /> Back to Dashboard
           </Link>
-          <span className="ml-auto text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full font-bold">Principal View</span>
+          <span className="ml-auto text-xs bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg font-bold border border-indigo-200 shadow-sm">Principal View</span>
         </div>
       </div>
       
