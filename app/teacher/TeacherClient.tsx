@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import StudentList from '@/components/StudentList';
 import CameraCapture from '@/components/CameraCapture';
-import { CheckCircle2, UserPlus, Megaphone, Send, LogOut } from 'lucide-react';
+import { CheckCircle2, UserPlus, Megaphone, Send, LogOut, Sparkles } from 'lucide-react';
 
 const WhatsAppIcon = ({ size = 20, className = "" }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
@@ -36,6 +36,8 @@ export default function TeacherClient({ schoolId, classId, teacherName, schoolNa
   
   // Announcement State
   const [announcement, setAnnouncement] = useState({ type: 'PTM', message: '' });
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
     fetch(`/api/students?class_id=${classId}&school_id=${schoolId}`)
@@ -100,6 +102,28 @@ export default function TeacherClient({ schoolId, classId, teacherName, schoolNa
       window.open(`https://wa.me/?text=${msg}`, '_blank');
       setAnnouncement({ type: 'PTM', message: '' });
     }
+  };
+
+  const generateWithGemini = async () => {
+    if (!aiPrompt) return;
+    setIsGenerating(true);
+    try {
+      const res = await fetch('/api/generate-announcement', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: aiPrompt })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setAnnouncement({ ...announcement, message: data.message });
+        setAiPrompt('');
+      } else {
+        alert(data.error || 'Failed to generate announcement');
+      }
+    } catch (error) {
+      alert('Error generating announcement');
+    }
+    setIsGenerating(false);
   };
 
   return (
@@ -186,13 +210,46 @@ export default function TeacherClient({ schoolId, classId, teacherName, schoolNa
           )}
 
           {activeTab === 'announcements' && (
-            <div className="bg-white rounded-2xl border border-gray-200 p-6">
-              <h2 className="text-xl font-bold mb-6 flex items-center text-gray-900">
-                <div className="bg-orange-50 p-2 rounded-xl mr-3">
-                  <Megaphone className="text-orange-600" size={20} />
+            <div className="space-y-8">
+              {/* AI Assistant Card */}
+              <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl border border-indigo-100 p-6">
+                <h2 className="text-xl font-bold mb-4 flex items-center text-indigo-900">
+                  <div className="bg-white p-2 rounded-xl mr-3 shadow-sm border border-indigo-50">
+                    <Sparkles className="text-indigo-600" size={20} />
+                  </div>
+                  AI Assistant
+                </h2>
+                <div className="space-y-3">
+                  <input 
+                    type="text" 
+                    placeholder="E.g. 'holiday diwali' or 'PTM tomorrow'" 
+                    value={aiPrompt}
+                    onChange={e => setAiPrompt(e.target.value)}
+                    className="w-full border border-indigo-200 p-3.5 rounded-xl bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all duration-200 min-h-[44px]" 
+                  />
+                  <button 
+                    onClick={generateWithGemini}
+                    disabled={isGenerating || !aiPrompt}
+                    className="w-full bg-[#4F46E5] text-white py-3.5 rounded-xl font-bold flex items-center justify-center hover:bg-indigo-700 transition-all duration-200 active:scale-[0.97] disabled:opacity-70 disabled:transform-none min-h-[44px]"
+                  >
+                    {isGenerating ? 'Generating...' : (
+                      <>
+                        <Sparkles className="mr-2" size={18} /> 
+                        Draft with Gemini
+                      </>
+                    )}
+                  </button>
                 </div>
-                Send Announcement
-              </h2>
+              </div>
+
+              {/* Manual Announcement Form */}
+              <div className="bg-white rounded-2xl border border-gray-200 p-6">
+                <h2 className="text-xl font-bold mb-6 flex items-center text-gray-900">
+                  <div className="bg-orange-50 p-2 rounded-xl mr-3">
+                    <Megaphone className="text-orange-600" size={20} />
+                  </div>
+                  Review & Send
+                </h2>
               <form onSubmit={sendAnnouncement} className="space-y-4">
                 <select value={announcement.type} onChange={e => setAnnouncement({...announcement, type: e.target.value})} className="w-full border border-gray-200 p-3.5 rounded-xl bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-orange-500 outline-none font-semibold text-gray-700 transition-all duration-200 cursor-pointer min-h-[44px]">
                   <option value="PTM">Parents Teacher Meeting (PTM)</option>
@@ -205,6 +262,7 @@ export default function TeacherClient({ schoolId, classId, teacherName, schoolNa
                   Send via WhatsApp
                 </button>
               </form>
+            </div>
             </div>
           )}
         </div>
