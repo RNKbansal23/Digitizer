@@ -24,8 +24,8 @@ export async function POST(req: Request) {
       );
     }
 
-    // For text-only input, use the gemini-1.5-flash model
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    // For text-only input, use the current gemini-3.6-flash model
+    const model = genAI.getGenerativeModel({ model: 'gemini-3.6-flash' });
 
     const systemPrompt = `You are a helpful and professional school assistant.
 A teacher has provided a short phrase or topic: "${prompt}".
@@ -38,10 +38,10 @@ Just write the main body of the message. Keep it friendly and informative.`;
     const text = response.text();
 
     return NextResponse.json({ success: true, message: text.trim() });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error generating announcement with Gemini:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to generate announcement' },
+      { success: false, error: error.message || 'Failed to generate announcement' },
       { status: 500 }
     );
   }
