@@ -38,6 +38,7 @@ export default function TeacherClient({ schoolId, classId, teacherName, schoolNa
   const [announcement, setAnnouncement] = useState({ type: 'PTM', message: '' });
   const [aiPrompt, setAiPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [markedPresent, setMarkedPresent] = useState(false);
 
   useEffect(() => {
     fetch(`/api/students?class_id=${classId}&school_id=${schoolId}`)
@@ -126,6 +127,20 @@ export default function TeacherClient({ schoolId, classId, teacherName, schoolNa
     setIsGenerating(false);
   };
 
+  const markSelfAttendance = async () => {
+    const todayStr = new Date().toISOString().split('T')[0];
+    const res = await fetch('/api/teacher-attendance', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ date: todayStr, school_id: schoolId })
+    });
+    if (res.ok) {
+      setMarkedPresent(true);
+    } else {
+      alert('Error marking attendance');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#F5F7FF] py-8 px-4 font-sans text-gray-800">
       <main className="max-w-2xl mx-auto p-8 bg-white shadow-sm rounded-2xl border border-gray-200 pb-28 relative">
@@ -135,11 +150,24 @@ export default function TeacherClient({ schoolId, classId, teacherName, schoolNa
             <p className="text-indigo-600 font-bold text-sm uppercase tracking-wider">{schoolName}</p>
             <p className="text-gray-500 text-sm mt-1 font-medium">Today: {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
           </div>
-          <form action="/auth/signout" method="post">
-            <button className="text-red-500 bg-red-50/50 p-3 rounded-xl border border-transparent hover:border-red-100 hover:bg-red-50 transition-all duration-200 active:scale-[0.97] min-h-[44px]">
-              <LogOut size={20} />
+          <div className="flex items-center space-x-3">
+            <button 
+              onClick={markSelfAttendance}
+              disabled={markedPresent}
+              className={`px-4 py-2 rounded-xl font-bold transition-all duration-200 active:scale-[0.97] min-h-[44px] flex items-center ${markedPresent ? 'bg-green-100 text-green-700 cursor-default' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'}`}
+            >
+              {markedPresent ? (
+                <><CheckCircle2 size={18} className="mr-2" /> Present Today</>
+              ) : (
+                'Mark Self Attendance'
+              )}
             </button>
-          </form>
+            <form action="/auth/signout" method="post">
+              <button className="text-red-500 bg-red-50/50 p-3 rounded-xl border border-transparent hover:border-red-100 hover:bg-red-50 transition-all duration-200 active:scale-[0.97] min-h-[44px]">
+                <LogOut size={20} />
+              </button>
+            </form>
+          </div>
         </header>
 
         {/* Tabs */}
