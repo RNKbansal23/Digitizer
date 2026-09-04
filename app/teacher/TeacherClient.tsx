@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import StudentList from '@/components/StudentList';
 import CameraCapture from '@/components/CameraCapture';
-import { CheckCircle2, UserPlus, Megaphone, Send, LogOut, Sparkles } from 'lucide-react';
+import { CheckCircle2, UserPlus, Megaphone, Send, LogOut, Sparkles, Users, BookOpen, School, Save } from 'lucide-react';
 
 const WhatsAppIcon = ({ size = 16, className = "" }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
@@ -215,158 +215,165 @@ export default function TeacherClient({ schoolId, classId, teacherName, schoolNa
                 )}
               </button>
             )}
-            <form action="/auth/signout" method="post">
-              <button className="flex-none text-slate-500 bg-white hover:text-slate-900 hover:bg-gray-50 p-2.5 rounded-xl border border-gray-200 transition-colors min-h-[44px] md:min-h-[40px] flex items-center justify-center">
+            <form action="/auth/signout" method="post" className="flex-none">
+              <button 
+                type="submit"
+                className="flex items-center justify-center space-x-2 bg-white border border-gray-200 text-slate-700 hover:bg-gray-50 px-4 py-2 rounded-xl transition-colors active:scale-[0.97] min-h-[44px] sm:w-auto w-full"
+              >
                 <LogOut size={18} />
+                <span className="font-bold text-sm hidden sm:inline">Sign Out</span>
               </button>
             </form>
           </div>
-        </header>
 
-        {/* Tabs */}
-        <div className="px-4 md:px-6 pt-4 md:pt-6">
-          <div className="flex overflow-x-auto scrollbar-hide pb-2 -mb-2">
-            <div className="flex p-1 bg-gray-100/80 rounded-xl inline-flex min-w-max">
-              <button onClick={() => setActiveTab('attendance')} className={`px-5 py-2 rounded-lg font-medium text-sm transition-all min-h-[40px] md:min-h-[36px] ${activeTab === 'attendance' ? 'bg-white text-slate-900 shadow-sm border border-gray-200/50' : 'text-slate-500 hover:text-slate-700 hover:bg-gray-200/50'}`}>Attendance</button>
-              <button onClick={() => setActiveTab('students')} className={`px-5 py-2 rounded-lg font-medium text-sm transition-all min-h-[40px] md:min-h-[36px] ${activeTab === 'students' ? 'bg-white text-slate-900 shadow-sm border border-gray-200/50' : 'text-slate-500 hover:text-slate-700 hover:bg-gray-200/50'}`}>Manage Students</button>
-              <button onClick={() => setActiveTab('announcements')} className={`px-5 py-2 rounded-lg font-medium text-sm transition-all min-h-[40px] md:min-h-[36px] ${activeTab === 'announcements' ? 'bg-white text-slate-900 shadow-sm border border-gray-200/50' : 'text-slate-500 hover:text-slate-700 hover:bg-gray-200/50'}`}>Announcements</button>
+          <div className="px-4 sm:px-8 pt-2">
+            <div className="flex overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
+              <div className="flex bg-indigo-800/40 p-1.5 rounded-2xl inline-flex min-w-max backdrop-blur-sm">
+                <button 
+                  onClick={() => setActiveTab('attendance')} 
+                  className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 min-h-[44px] ${activeTab === 'attendance' ? 'bg-white text-indigo-700 shadow-lg scale-[1.02]' : 'text-indigo-100 hover:text-white hover:bg-white/10 active:scale-[0.97]'}`}
+                >
+                  <Users size={16} className="inline mr-2" />
+                  Attendance
+                </button>
+                <button 
+                  onClick={() => setActiveTab('students')} 
+                  className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 min-h-[44px] ${activeTab === 'students' ? 'bg-white text-indigo-700 shadow-lg scale-[1.02]' : 'text-indigo-100 hover:text-white hover:bg-white/10 active:scale-[0.97]'}`}
+                >
+                  <BookOpen size={16} className="inline mr-2" />
+                  Manage Students
+                </button>
+                <button 
+                  onClick={() => setActiveTab('announcements')} 
+                  className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 min-h-[44px] ${activeTab === 'announcements' ? 'bg-white text-indigo-700 shadow-lg scale-[1.02]' : 'text-indigo-100 hover:text-white hover:bg-white/10 active:scale-[0.97]'}`}
+                >
+                  <Megaphone size={16} className="inline mr-2" />
+                  Announcements
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        </header>
 
-        <div className="flex-1 p-4 md:p-6 mt-2">
+        <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-6 pb-32">
           {activeTab === 'attendance' && (
-            <div className="space-y-6">
+            <div className="space-y-6 max-w-2xl mx-auto">
+              
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-white p-5 rounded-[20px] shadow-sm border border-gray-100 gap-4">
+                <div className="flex flex-col flex-1">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Select Date</label>
+                  <input 
+                    type="date" 
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                    className="border border-gray-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none bg-[#FAF9F6] text-slate-900 font-bold min-h-[44px] transition-colors"
+                  />
+                </div>
+                {isLocked && (
+                  <div className="bg-[#FFF0EB] text-[#FF7F50] px-4 py-2.5 rounded-xl text-sm font-bold flex items-center border border-[#FFD8CD]">
+                    <CheckCircle2 size={16} className="mr-2" /> 
+                    Attendance Locked
+                  </div>
+                )}
+              </div>
+
               <StudentList students={students} absentIds={absentIds} toggleAbsent={toggleAbsent} />
               
-              {!isReadOnly && (
-                <>
-                  <CameraCapture image={homeworkImage} setImage={setHomeworkImage} />
-                  <div className="fixed md:absolute bottom-0 left-0 right-0 p-4 md:p-6 bg-white/90 backdrop-blur-md border-t border-gray-100 flex flex-col sm:flex-row justify-center gap-3 z-20 rounded-b-xl">
-                    <button
-                      onClick={saveAttendance}
-                      disabled={isSubmitting || isLocked}
-                      className="w-full sm:w-auto sm:min-w-[140px] flex items-center justify-center bg-indigo-600 text-white py-2.5 px-4 rounded-xl font-medium text-sm disabled:opacity-70 transition-colors hover:bg-indigo-700 min-h-[44px] md:min-h-[40px]"
-                    >
-                      {isLocked ? 'Locked' : isSubmitting ? 'Saving...' : 'Save & Update'}
-                    </button>
-                    <button
-                      onClick={notifyParents}
-                      disabled={isLocked && absentIds.length === 0}
-                      className="w-full sm:w-auto sm:min-w-[140px] flex items-center justify-center bg-emerald-600 text-white py-2.5 px-4 rounded-xl font-medium text-sm disabled:opacity-70 transition-colors hover:bg-emerald-700 min-h-[44px] md:min-h-[40px]"
-                    >
-                      <WhatsAppIcon className="mr-2" /> 
-                      Notify Parents
-                    </button>
-                  </div>
-                </>
-              )}
+              <CameraCapture image={homeworkImage} setImage={setHomeworkImage} />
+            </div>
+          )}
+
+          {activeTab === 'attendance' && (
+            <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-gray-100 p-4 sm:px-8 flex items-center justify-between gap-3 sm:gap-4 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] z-20">
+              <button
+                onClick={saveAttendance}
+                disabled={isSubmitting || isLocked}
+                className="flex-1 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold py-3.5 rounded-xl flex items-center justify-center transition-all duration-200 active:scale-[0.97] disabled:opacity-50 disabled:active:scale-100 shadow-lg shadow-indigo-600/20 text-sm sm:text-base"
+              >
+                {isSubmitting ? (
+                  'Saving...'
+                ) : (
+                  <>
+                    <Save size={18} className="mr-2" />
+                    Save & Update
+                  </>
+                )}
+              </button>
+
+              <button
+                onClick={notifyParents}
+                disabled={isSubmitting || isLocked || absentIds.length === 0}
+                className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold py-3.5 rounded-xl flex items-center justify-center transition-all duration-200 active:scale-[0.97] disabled:opacity-50 disabled:active:scale-100 shadow-lg shadow-emerald-500/20 text-sm sm:text-base"
+              >
+                <WhatsAppIcon className="mr-2 w-5 h-5" />
+                Notify Parents
+              </button>
             </div>
           )}
 
           {activeTab === 'students' && (
-            <div className="space-y-6">
-              {!isReadOnly && (
-                <div className="bg-white rounded-xl border border-gray-200 p-4 md:p-6">
-                  <h2 className="text-base font-semibold mb-4 flex items-center text-slate-900">
-                    <div className="w-8 h-8 bg-indigo-50 rounded-lg flex items-center justify-center mr-3">
-                      <UserPlus className="text-indigo-600" size={16} />
-                    </div>
-                    Add New Student
-                  </h2>
-                  <form onSubmit={addStudent} className="flex flex-col gap-3">
-                    <input type="text" placeholder="Student Name" required value={newStudent.name} onChange={e => setNewStudent({...newStudent, name: e.target.value})} className="w-full border border-gray-200 p-2.5 rounded-xl bg-white placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-colors text-sm min-h-[44px] md:min-h-[40px]" />
-                    <div className="flex gap-3">
-                      <input type="number" placeholder="Roll No" required value={newStudent.roll} onChange={e => setNewStudent({...newStudent, roll: e.target.value})} className="w-1/3 border border-gray-200 p-2.5 rounded-xl bg-white placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-colors text-sm min-h-[44px] md:min-h-[40px]" />
-                      <input type="tel" placeholder="Parent WhatsApp" required value={newStudent.parent_phone} onChange={e => setNewStudent({...newStudent, parent_phone: e.target.value})} className="w-2/3 border border-gray-200 p-2.5 rounded-xl bg-white placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-colors text-sm min-h-[44px] md:min-h-[40px]" />
-                    </div>
-                    <button type="submit" className="w-full bg-indigo-600 text-white py-2.5 rounded-xl font-medium text-sm hover:bg-indigo-700 transition-colors min-h-[44px] md:min-h-[40px] mt-1">Add Student</button>
-                  </form>
+            <div className="bg-white rounded-[20px] shadow-sm border border-gray-100 overflow-hidden max-w-2xl mx-auto">
+              <div className="p-5 md:p-6 border-b border-gray-50 flex justify-between items-center bg-[#FAF9F6]">
+                <h2 className="text-lg font-bold text-slate-900">Class Roster</h2>
+                <div className="bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-lg text-sm font-bold tracking-wide">
+                  {students.length} Students
                 </div>
-              )}
-              
-              <div className="bg-white rounded-xl border border-gray-200 p-4 md:p-6">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="font-semibold text-slate-900 text-base">Enrolled Students</h3>
-                  <span className="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md text-xs font-medium">{students.length} Total</span>
-                </div>
-                <ul className="space-y-2">
-                  {students.map(s => (
-                    <li key={s.id} className="p-3 border border-gray-100 rounded-lg bg-white flex justify-between items-center hover:border-gray-300 transition-colors">
-                      <div className="flex items-center space-x-3">
-                        <span className="w-8 h-8 rounded-md bg-gray-50 text-slate-600 flex items-center justify-center font-medium text-xs border border-gray-200">{s.roll}</span>
-                        <span className="font-medium text-slate-900 text-sm">{s.name}</span>
-                      </div>
-                      <span className="text-slate-500 text-xs">+{s.parent_phone}</span>
-                    </li>
-                  ))}
-                </ul>
               </div>
+              <ul className="divide-y divide-gray-50">
+                {students.map(student => (
+                  <li key={student.id} className="p-4 md:p-5 flex items-center justify-between hover:bg-gray-50/50 transition-colors">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-10 h-10 bg-[#FFF0EB] rounded-xl flex items-center justify-center text-[#FF7F50] font-black text-sm">
+                        {student.roll}
+                      </div>
+                      <div>
+                        <p className="font-bold text-slate-900 tracking-tight">{student.name}</p>
+                        <p className="text-sm text-slate-500 font-medium">{student.parent_phone}</p>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
 
           {activeTab === 'announcements' && (
-            <div className="space-y-6">
-              {isReadOnly ? (
-                <div className="bg-white rounded-xl border border-gray-200 p-6">
-                  <p className="text-slate-500 text-sm text-center font-medium">Principals cannot send announcements directly from a class view.</p>
+            <div className="max-w-2xl mx-auto">
+              {error && (
+                <div className="bg-[#FFF9F7] text-[#D95B30] p-4 rounded-xl mb-6 text-sm border border-[#FFD8CD] font-bold">
+                  {error}
                 </div>
-              ) : (
-                <>
-                  {/* AI Assistant Widget */}
-                  <div className="bg-white rounded-xl border border-gray-200 p-4 md:p-6 shadow-sm">
-                    <h2 className="text-base font-semibold mb-4 flex items-center text-slate-900">
-                      <div className="w-8 h-8 bg-indigo-50 rounded-lg flex items-center justify-center mr-3">
-                        <Sparkles className="text-indigo-600" size={16} />
-                      </div>
-                      AI Assistant
-                    </h2>
-                    <div className="flex flex-col gap-3">
-                      <input 
-                        type="text" 
-                        placeholder="E.g. 'holiday diwali' or 'PTM tomorrow'" 
-                        value={aiPrompt}
-                        onChange={e => setAiPrompt(e.target.value)}
-                        className="w-full border border-gray-200 p-2.5 rounded-xl bg-white placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-colors text-sm min-h-[44px] md:min-h-[40px]" 
-                      />
-                      <button 
-                        onClick={generateWithGemini}
-                        disabled={isGenerating || !aiPrompt}
-                        className="w-full bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-50 py-2.5 rounded-xl font-medium text-sm flex items-center justify-center transition-colors disabled:opacity-50 min-h-[44px] md:min-h-[40px]"
-                      >
-                        {isGenerating ? 'Generating...' : (
-                          <>
-                            <Sparkles className="mr-2" size={16} /> 
-                            Draft with Gemini
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Manual Announcement Form */}
-                  <div className="bg-white rounded-xl border border-gray-200 p-4 md:p-6">
-                    <h2 className="text-base font-semibold mb-4 flex items-center text-slate-900">
-                      <div className="w-8 h-8 bg-slate-50 rounded-lg flex items-center justify-center mr-3">
-                        <Megaphone className="text-slate-600" size={16} />
-                      </div>
-                      Review & Send
-                    </h2>
-                    <form onSubmit={sendAnnouncement} className="flex flex-col gap-4">
-                      <select value={announcement.type} onChange={e => setAnnouncement({...announcement, type: e.target.value})} className="w-full border border-gray-200 p-2.5 rounded-xl bg-white text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-sm font-medium min-h-[44px] md:min-h-[40px]">
-                        <option value="PTM">Parents Teacher Meeting (PTM)</option>
-                        <option value="Holiday">School Holiday</option>
-                        <option value="General">General Notice</option>
-                      </select>
-                      <textarea placeholder="Type your message here..." required rows={5} value={announcement.message} onChange={e => setAnnouncement({...announcement, message: e.target.value})} className="w-full border border-gray-200 p-3 rounded-xl bg-white placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-colors resize-none text-sm" />
-                      <button type="submit" className="w-full bg-emerald-600 text-white py-2.5 rounded-xl font-medium text-sm flex items-center justify-center hover:bg-emerald-700 transition-colors min-h-[44px] md:min-h-[40px] mt-2">
-                        <WhatsAppIcon className="mr-2" /> 
-                        Send via WhatsApp
-                      </button>
-                    </form>
-                  </div>
-                </>
               )}
+              {success && (
+                <div className="bg-emerald-50 text-emerald-700 p-4 rounded-xl mb-6 text-sm border border-emerald-100 font-bold">
+                  {success}
+                </div>
+              )}
+              
+              <div className="bg-white rounded-[20px] shadow-sm border border-gray-100 overflow-hidden mb-6">
+                <div className="bg-gradient-to-r from-amber-500 to-orange-400 p-6 text-white">
+                  <div className="flex items-center mb-2">
+                    <Megaphone size={24} className="mr-3 text-white/90" />
+                    <h2 className="text-xl font-bold tracking-tight">Class Announcement</h2>
+                  </div>
+                  <p className="text-amber-50 text-sm font-medium">Broadcast a message to all parents in Class {classId}</p>
+                </div>
+                
+                <div className="p-6">
+                  <form onSubmit={handleAnnouncementSubmit} className="space-y-4">
+                    <select value={announcement.type} onChange={e => setAnnouncement({...announcement, type: e.target.value})} className="w-full border border-gray-200 p-3 rounded-xl bg-[#FAF9F6] text-slate-700 font-bold focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-colors">
+                      <option value="PTM">Parents Teacher Meeting (PTM)</option>
+                      <option value="Holiday">School Holiday</option>
+                      <option value="General">General Notice</option>
+                    </select>
+                    <textarea placeholder="Type your friendly message here..." required rows={5} value={announcement.message} onChange={e => setAnnouncement({...announcement, message: e.target.value})} className="w-full border border-gray-200 p-4 rounded-xl bg-white placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-colors resize-none text-sm font-medium" />
+                    <button type="submit" className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white py-3.5 rounded-xl font-bold text-sm flex items-center justify-center hover:from-emerald-400 hover:to-teal-400 transition-all duration-200 active:scale-[0.97] min-h-[44px] mt-2 shadow-lg shadow-emerald-500/20">
+                      <WhatsAppIcon className="mr-2 w-5 h-5" /> 
+                      Send via WhatsApp
+                    </button>
+                  </form>
+                </div>
+              </div>
             </div>
           )}
         </div>

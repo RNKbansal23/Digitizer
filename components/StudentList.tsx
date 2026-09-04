@@ -9,37 +9,37 @@ interface StudentListProps {
 
 export default function StudentList({ students, absentIds, toggleAbsent }: StudentListProps) {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-4 md:p-6 shadow-sm">
-      <h2 className="text-base font-semibold mb-4 flex items-center text-slate-900">
-        <div className="w-8 h-8 bg-red-50 rounded-lg flex items-center justify-center mr-3">
-          <UserX className="text-red-600" size={16} />
+    <div className="bg-white rounded-[20px] border border-gray-100 p-4 md:p-6 shadow-sm">
+      <h2 className="text-lg font-bold mb-5 flex items-center text-slate-900 tracking-tight">
+        <div className="w-10 h-10 bg-coral-50 bg-[#FFF0EB] rounded-xl flex items-center justify-center mr-3">
+          <UserX className="text-[#FF7F50]" size={18} />
         </div>
         Mark Absentees
       </h2>
-      <ul className="space-y-2">
+      <ul className="space-y-3">
         {students.map((student) => {
           const isAbsent = absentIds.includes(student.id);
           return (
             <li
               key={student.id}
-              className={`p-3 rounded-xl border flex items-center justify-between transition-colors ${
-                isAbsent ? 'bg-red-50/50 border-red-200' : 'bg-white border-gray-100 hover:border-gray-300'
+              className={`p-3 md:p-4 rounded-[16px] border flex items-center justify-between transition-colors duration-200 ${
+                isAbsent ? 'bg-[#FFF9F7] border-[#FFD8CD]' : 'bg-white border-gray-100 hover:border-gray-300'
               }`}
             >
-              <div className="flex items-center space-x-3">
-                <span className={`w-8 h-8 rounded-lg flex items-center justify-center font-medium text-xs border ${isAbsent ? 'bg-red-100 text-red-700 border-red-200' : 'bg-gray-50 text-slate-600 border-gray-200'}`}>
+              <div className="flex items-center space-x-4">
+                <span className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm border ${isAbsent ? 'bg-[#FFECE5] text-[#FF7F50] border-[#FFD8CD]' : 'bg-slate-50 text-slate-600 border-gray-200'}`}>
                   {student.roll}
                 </span>
                 <div>
-                  <span className={`font-medium block text-sm ${isAbsent ? 'text-red-900' : 'text-slate-900'}`}>{student.name}</span>
+                  <span className={`font-bold block text-base tracking-tight ${isAbsent ? 'text-[#D95B30]' : 'text-slate-900'}`}>{student.name}</span>
                 </div>
               </div>
               <button
                 onClick={() => toggleAbsent(student.id)}
-                className={`w-10 h-10 md:w-9 md:h-9 rounded-lg font-bold text-sm flex items-center justify-center transition-colors min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 ${
+                className={`w-12 h-12 rounded-[14px] font-black text-lg flex items-center justify-center transition-all duration-200 active:scale-75 ${
                   isAbsent 
-                    ? 'bg-red-100 text-red-700 border border-red-200' 
-                    : 'bg-white text-slate-400 border border-gray-200 hover:bg-gray-50 hover:text-slate-600'
+                    ? 'bg-[#FF7F50] text-white shadow-lg shadow-coral-500/30 border border-transparent scale-110' 
+                    : 'bg-white text-slate-300 border-2 border-gray-100 hover:bg-gray-50 hover:text-slate-500 scale-100'
                 }`}
               >
                 A
