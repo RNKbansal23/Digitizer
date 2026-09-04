@@ -112,10 +112,40 @@ erDiagram
         text message
         timestamp date
     }
+    
+    fee_invoices {
+        uuid id PK
+        uuid student_id FK
+        numeric amount
+        text status "pending/paid"
+        text description
+        timestamp due_date
+    }
+
+    store_items {
+        uuid id PK
+        uuid school_id FK
+        text category "books/uniform"
+        text name
+        numeric price
+        int stock
+    }
+
+    orders {
+        uuid id PK
+        uuid student_id FK
+        uuid item_id FK
+        text status "pending/fulfilled"
+        timestamp date
+    }
 
     students ||--o{ absences : "has"
     daily_logs ||--o{ absences : "contains"
     students ||--o{ leave_requests : "submits"
+    students ||--o{ fee_invoices : "billed"
+    schools ||--o{ store_items : "sells"
+    students ||--o{ orders : "places"
+    store_items ||--o{ orders : "included in"
 ```
 
 ### Table Relationships (How they connect)
@@ -125,12 +155,20 @@ erDiagram
 4. **`absences`**: A junction table that links a `student_id` to a specific `log_id` (a specific day's homework/attendance record).
 5. **`leave_requests`**: Directly attached to a `student_id` so parents can submit leaves that teachers can query by class.
 
+**[Future Architecture Extensions]**
+6. **`fee_invoices`**: Linked to `students` for tracking pending/paid school fees (Fees Intimation).
+7. **`store_items`**: Linked to `schools` to represent the school's inventory of books and uniforms for sale.
+8. **`orders`**: Links `students` and `store_items` to handle commerce transactions for school dresses and books.
+
 ---
 
 ## 🔮 Future Scope
 
-1. **Teacher Onboarding Flow**: Create a SuperAdmin dashboard to quickly onboard new schools, set up their `school_id`, and generate invite links for Principals.
-2. **Row Level Security (RLS)**: Enforce RLS natively in Supabase so that database queries automatically filter by the authenticated user's `school_id` at the database layer (currently handled in application logic).
-3. **Automated Analytics**: Generate weekly PDF or UI reports for Principals detailing average attendance rates, most active teachers, and chronic absenteeism.
-4. **Push Notifications**: Upgrade the Parent Portal to a fully installable PWA with Service Worker push notifications, moving away from WhatsApp dependencies.
-5. **Multi-Language Support (i18n)**: Allow the AI Assistant and UI to automatically translate announcements and interfaces into regional languages (e.g., Hindi, Marathi) based on parent preferences.
+1. **Commerce & Operations Module**: 
+   - **Fees Intimation**: Automated generation and tracking of student fee invoices with WhatsApp payment reminders.
+   - **School Store**: E-commerce interface in the Parent Portal for selling school books, notebooks, and uniforms directly to parents.
+2. **Teacher Onboarding Flow**: Create a SuperAdmin dashboard to quickly onboard new schools, set up their `school_id`, and generate invite links for Principals.
+3. **Row Level Security (RLS)**: Enforce RLS natively in Supabase so that database queries automatically filter by the authenticated user's `school_id` at the database layer (currently handled in application logic).
+4. **Automated Analytics**: Generate weekly PDF or UI reports for Principals detailing average attendance rates, most active teachers, and chronic absenteeism.
+5. **Push Notifications**: Upgrade the Parent Portal to a fully installable PWA with Service Worker push notifications, moving away from WhatsApp dependencies.
+6. **Multi-Language Support (i18n)**: Allow the AI Assistant and UI to automatically translate announcements and interfaces into regional languages (e.g., Hindi, Marathi) based on parent preferences.
