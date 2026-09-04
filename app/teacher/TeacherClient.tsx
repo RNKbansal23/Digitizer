@@ -88,7 +88,28 @@ export default function TeacherClient({ schoolId, classId, teacherName, schoolNa
     setAbsentIds((prev) => prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]);
   };
 
+  const playClickSound = () => {
+    try {
+      const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+      const ctx = new AudioContext();
+      const osc = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(800, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.1);
+      gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+      osc.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.1);
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
   const saveAttendance = async () => {
+    playClickSound();
     if (isLocked) {
       alert("This date is locked and cannot be edited.");
       return;
@@ -300,7 +321,7 @@ export default function TeacherClient({ schoolId, classId, teacherName, schoolNa
               <button
                 onClick={saveAttendance}
                 disabled={isSubmitting || isLocked}
-                className="flex-1 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold py-3.5 rounded-xl flex items-center justify-center transition-all duration-200 active:scale-[0.97] disabled:opacity-50 disabled:active:scale-100 shadow-lg shadow-indigo-600/20 text-sm sm:text-base"
+                className="flex-1 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold py-3.5 rounded-xl flex items-center justify-center transition-all duration-150 active:translate-y-1 active:border-b-0 disabled:opacity-50 disabled:active:translate-y-0 disabled:active:border-b-4 border-b-4 border-indigo-800 shadow-lg shadow-indigo-600/20 text-sm sm:text-base"
               >
                 {isSubmitting ? (
                   'Saving...'
@@ -313,9 +334,9 @@ export default function TeacherClient({ schoolId, classId, teacherName, schoolNa
               </button>
 
               <button
-                onClick={notifyParents}
+                onClick={() => { playClickSound(); notifyParents(); }}
                 disabled={isSubmitting || isLocked || absentIds.length === 0}
-                className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold py-3.5 rounded-xl flex items-center justify-center transition-all duration-200 active:scale-[0.97] disabled:opacity-50 disabled:active:scale-100 shadow-lg shadow-emerald-500/20 text-sm sm:text-base"
+                className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-bold py-3.5 rounded-xl flex items-center justify-center transition-all duration-150 active:translate-y-1 active:border-b-0 disabled:opacity-50 disabled:active:translate-y-0 disabled:active:border-b-4 border-b-4 border-emerald-700 shadow-lg shadow-emerald-500/20 text-sm sm:text-base"
               >
                 <WhatsAppIcon className="mr-2 w-5 h-5" />
                 Notify Parents
@@ -330,6 +351,14 @@ export default function TeacherClient({ schoolId, classId, teacherName, schoolNa
                 <div className="bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-lg text-sm font-bold tracking-wide">
                   {students.length} Students
                 </div>
+              </div>
+              <div className="p-5 border-b border-gray-100 bg-white">
+                <form onSubmit={(e) => { playClickSound(); addStudent(e); }} className="flex flex-col sm:flex-row gap-3">
+                  <input type="text" placeholder="Name" value={newStudent.name} onChange={e => setNewStudent({...newStudent, name: e.target.value})} required className="border border-gray-200 rounded-xl px-4 py-2 text-sm flex-1 focus:ring-2 focus:ring-indigo-500 outline-none" />
+                  <input type="number" placeholder="Roll No" value={newStudent.roll} onChange={e => setNewStudent({...newStudent, roll: e.target.value})} required className="border border-gray-200 rounded-xl px-4 py-2 text-sm w-full sm:w-24 focus:ring-2 focus:ring-indigo-500 outline-none" />
+                  <input type="tel" placeholder="Parent Phone" value={newStudent.parent_phone} onChange={e => setNewStudent({...newStudent, parent_phone: e.target.value})} required className="border border-gray-200 rounded-xl px-4 py-2 text-sm flex-1 focus:ring-2 focus:ring-indigo-500 outline-none" />
+                  <button type="submit" className="bg-indigo-600 text-white rounded-xl px-6 py-2 font-bold text-sm border-b-4 border-indigo-800 active:border-b-0 active:translate-y-1 transition-all">Add</button>
+                </form>
               </div>
               <ul className="divide-y divide-gray-50">
                 {students.map(student => (
@@ -403,7 +432,7 @@ export default function TeacherClient({ schoolId, classId, teacherName, schoolNa
                         </button>
                       </div>
                     </div>
-                    <button type="submit" className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white py-3.5 rounded-xl font-bold text-sm flex items-center justify-center hover:from-emerald-400 hover:to-teal-400 transition-all duration-200 active:scale-[0.97] min-h-[44px] mt-2 shadow-lg shadow-emerald-500/20">
+                    <button type="submit" onClick={() => playClickSound()} className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white py-3.5 rounded-xl font-bold text-sm flex items-center justify-center transition-all duration-150 active:translate-y-1 active:border-b-0 border-b-4 border-emerald-700 min-h-[44px] mt-4 shadow-lg shadow-emerald-500/20">
                       <WhatsAppIcon className="mr-2 w-5 h-5" /> 
                       Send via WhatsApp
                     </button>
