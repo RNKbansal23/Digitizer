@@ -43,87 +43,106 @@ export default function PrincipalClient({ schoolId, schoolName, profileName, stu
   };
 
   return (
-    <main className="min-h-screen bg-[#F5F7FF] p-6 font-sans text-gray-800">
-      <div className="max-w-4xl mx-auto space-y-6">
-        <header className="flex justify-between items-center bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
-          <div>
-            <h1 className="text-3xl font-extrabold text-gray-900 flex items-center mb-1">
-              <div className="bg-indigo-50 p-2 rounded-xl mr-3">
-                <Building className="text-indigo-600" size={24} />
-              </div>
-              {schoolName}
-            </h1>
-            <p className="text-gray-500 font-medium">Principal Dashboard • Welcome, {profileName}</p>
+    <main className="min-h-screen bg-[#F8F9FC] p-4 md:p-8 font-sans text-slate-900">
+      <div className="max-w-7xl mx-auto space-y-6 md:space-y-8">
+        {/* Header */}
+        <header className="flex flex-col sm:flex-row sm:justify-between sm:items-center bg-white p-4 md:p-6 rounded-xl border border-gray-200 gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center flex-shrink-0">
+              <Building className="text-indigo-600" size={24} />
+            </div>
+            <div>
+              <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight leading-tight">{schoolName}</h1>
+              <p className="text-sm text-slate-500 font-medium mt-0.5">Principal Dashboard • Welcome, {profileName}</p>
+            </div>
           </div>
-          <form action="/auth/signout" method="post">
-            <button className="flex items-center text-red-600 hover:text-red-700 font-bold px-5 py-3 bg-red-50/50 rounded-xl transition-all duration-200 active:scale-[0.97] min-h-[44px]">
-              <LogOut size={18} className="mr-2" /> Sign Out
+          <form action="/auth/signout" method="post" className="w-full sm:w-auto">
+            <button className="w-full sm:w-auto flex items-center justify-center text-slate-600 hover:text-slate-900 bg-white border border-gray-200 hover:bg-gray-50 font-medium px-4 py-2 rounded-xl transition-colors min-h-[44px] md:min-h-[40px] text-sm">
+              <LogOut size={16} className="mr-2" /> Sign Out
             </button>
           </form>
         </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white p-6 rounded-2xl border border-gray-200 flex items-center shadow-sm">
-            <div className="bg-indigo-50 p-4 rounded-xl mr-5">
-              <Users className="text-indigo-600" size={28} />
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+          <div className="bg-white p-5 md:p-6 rounded-xl border border-gray-200 flex items-center">
+            <div className="w-10 h-10 bg-indigo-50 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
+              <Users className="text-indigo-600" size={20} />
             </div>
             <div>
-              <p className="text-gray-500 font-semibold mb-1">Total Students</p>
-              <h2 className="text-4xl font-black text-gray-900">{studentCount || 0}</h2>
+              <p className="text-xs md:text-sm text-slate-500 font-medium mb-0.5">Total Students</p>
+              <h2 className="text-2xl md:text-3xl font-bold text-slate-900 leading-none">{studentCount || 0}</h2>
             </div>
           </div>
-          <div className="bg-white p-6 rounded-2xl border border-gray-200 flex items-center shadow-sm">
-            <div className="bg-orange-50 p-4 rounded-xl mr-5">
-              <BookOpen className="text-orange-600" size={28} />
+          <div className="bg-white p-5 md:p-6 rounded-xl border border-gray-200 flex items-center">
+            <div className="w-10 h-10 bg-indigo-50 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
+              <BookOpen className="text-indigo-600" size={20} />
             </div>
             <div>
-              <p className="text-gray-500 font-semibold mb-1">Total Teachers</p>
-              <h2 className="text-4xl font-black text-gray-900">{teacherCount || 0}</h2>
+              <p className="text-xs md:text-sm text-slate-500 font-medium mb-0.5">Total Teachers</p>
+              <h2 className="text-2xl md:text-3xl font-bold text-slate-900 leading-none">{teacherCount || 0}</h2>
             </div>
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="flex space-x-3 mb-4">
-          <button onClick={() => setActiveTab('classes')} className={`px-6 py-2.5 rounded-xl font-semibold transition-all duration-200 active:scale-[0.97] border min-h-[44px] ${activeTab === 'classes' ? 'bg-[#4F46E5] text-white border-transparent shadow-sm' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'}`}>Class Directory</button>
-          <button onClick={() => setActiveTab('attendance')} className={`px-6 py-2.5 rounded-xl font-semibold transition-all duration-200 active:scale-[0.97] border min-h-[44px] ${activeTab === 'attendance' ? 'bg-[#4F46E5] text-white border-transparent shadow-sm' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'}`}>Teacher Attendance</button>
+        {/* Segmented Control Tabs */}
+        <div className="flex overflow-x-auto scrollbar-hide pb-1 -mb-1">
+          <div className="flex p-1 bg-gray-100/80 rounded-xl inline-flex min-w-max">
+            <button 
+              onClick={() => setActiveTab('classes')} 
+              className={`px-5 py-2 rounded-lg font-medium text-sm transition-all min-h-[40px] md:min-h-[36px] ${activeTab === 'classes' ? 'bg-white text-slate-900 shadow-sm border border-gray-200/50' : 'text-slate-500 hover:text-slate-700 hover:bg-gray-200/50'}`}
+            >
+              Class Directory
+            </button>
+            <button 
+              onClick={() => setActiveTab('attendance')} 
+              className={`px-5 py-2 rounded-lg font-medium text-sm transition-all min-h-[40px] md:min-h-[36px] ${activeTab === 'attendance' ? 'bg-white text-slate-900 shadow-sm border border-gray-200/50' : 'text-slate-500 hover:text-slate-700 hover:bg-gray-200/50'}`}
+            >
+              Teacher Attendance
+            </button>
+          </div>
         </div>
 
-        {/* Content */}
-        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+        {/* Content Area */}
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           {activeTab === 'classes' && (
             <>
-              <div className="p-6 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
-                <h2 className="text-xl font-bold text-gray-900">Manage Classes</h2>
-                <button onClick={() => setShowAddClass(!showAddClass)} className="flex items-center text-indigo-600 bg-indigo-50 px-4 py-2 rounded-xl font-bold hover:bg-indigo-100 transition-all active:scale-[0.97] min-h-[44px]">
-                  <Plus size={18} className="mr-1" /> Add Class
+              <div className="p-4 md:p-6 border-b border-gray-100 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                <div>
+                  <h2 className="text-lg font-semibold text-slate-900">Manage Classes</h2>
+                  <p className="text-sm text-slate-500 mt-0.5">View and manage all active classes.</p>
+                </div>
+                <button onClick={() => setShowAddClass(!showAddClass)} className="flex items-center justify-center text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-xl font-medium transition-colors min-h-[44px] md:min-h-[40px] text-sm w-full sm:w-auto">
+                  <Plus size={16} className="mr-1.5" /> Add Class
                 </button>
               </div>
 
               {showAddClass && (
-                <div className="p-6 border-b border-gray-100 bg-indigo-50/30">
-                  <form onSubmit={handleAddClass} className="flex gap-4">
-                    <input type="text" placeholder="Class Name (e.g. 6B)" required value={newClass.class_name} onChange={e => setNewClass({...newClass, class_name: e.target.value})} className="flex-1 border border-gray-200 p-3.5 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500" />
-                    <input type="text" placeholder="Teacher Name" required value={newClass.teacher_name} onChange={e => setNewClass({...newClass, teacher_name: e.target.value})} className="flex-1 border border-gray-200 p-3.5 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500" />
-                    <button type="submit" disabled={isSubmitting} className="bg-indigo-600 text-white px-6 py-3.5 rounded-xl font-bold hover:bg-indigo-700 active:scale-[0.97] min-h-[44px]">
-                      {isSubmitting ? 'Adding...' : 'Save'}
+                <div className="p-4 md:p-6 border-b border-gray-100 bg-gray-50/50">
+                  <form onSubmit={handleAddClass} className="flex flex-col sm:flex-row gap-3">
+                    <input type="text" placeholder="Class Name (e.g. 6B)" required value={newClass.class_name} onChange={e => setNewClass({...newClass, class_name: e.target.value})} className="flex-1 border border-gray-200 bg-white p-2.5 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm min-h-[44px] md:min-h-[40px] placeholder-slate-400" />
+                    <input type="text" placeholder="Teacher Name" required value={newClass.teacher_name} onChange={e => setNewClass({...newClass, teacher_name: e.target.value})} className="flex-1 border border-gray-200 bg-white p-2.5 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm min-h-[44px] md:min-h-[40px] placeholder-slate-400" />
+                    <button type="submit" disabled={isSubmitting} className="bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-medium hover:bg-indigo-700 transition-colors min-h-[44px] md:min-h-[40px] text-sm w-full sm:w-auto disabled:opacity-70">
+                      {isSubmitting ? 'Saving...' : 'Save'}
                     </button>
                   </form>
                 </div>
               )}
 
-              <div className="p-6">
+              <div className="p-4 md:p-6">
                 {(!classes || classes.length === 0) ? (
-                  <p className="text-gray-500 text-center py-10 font-medium">No classes added yet.</p>
+                  <p className="text-slate-500 text-sm text-center py-12">No classes added yet.</p>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
                     {classes.map((c, i) => (
                       <Link href={`/principal/class/${c.class_name || c.class_id}`} key={i} className="block group">
-                        <div className="border border-gray-200 p-5 rounded-2xl flex flex-col items-start bg-gray-50/50 hover:bg-white hover:border-indigo-200 cursor-pointer transition-all duration-200 active:scale-[0.97] h-full">
-                          <span className="bg-indigo-50 text-indigo-700 font-bold px-3.5 py-1.5 rounded-xl text-sm mb-3">Class {c.class_name || c.class_id}</span>
-                          <span className="font-bold text-gray-800 text-lg">{c.teacher_name || c.name}</span>
-                          <span className="text-sm text-gray-500 mt-1 font-medium">Class Teacher</span>
-                          <div className="mt-5 text-sm font-bold text-indigo-600 flex items-center group-hover:translate-x-1 transition-transform">
+                        <div className="border border-gray-200 p-5 rounded-xl flex flex-col bg-white hover:border-indigo-300 hover:shadow-sm cursor-pointer transition-all h-full relative overflow-hidden">
+                          <div className="flex justify-between items-start mb-4">
+                            <span className="bg-gray-100 text-slate-700 font-medium px-2.5 py-1 rounded-lg text-xs tracking-wide">Class {c.class_name || c.class_id}</span>
+                          </div>
+                          <span className="font-semibold text-slate-900 text-base">{c.teacher_name || c.name}</span>
+                          <span className="text-xs text-slate-500 mt-1">Class Teacher</span>
+                          <div className="mt-6 text-sm font-medium text-indigo-600 flex items-center group-hover:translate-x-1 transition-transform">
                             Manage Class &rarr;
                           </div>
                         </div>
@@ -137,10 +156,10 @@ export default function PrincipalClient({ schoolId, schoolName, profileName, stu
 
           {activeTab === 'attendance' && (
             <>
-              <div className="p-6 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+              <div className="p-4 md:p-6 border-b border-gray-100 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                 <div>
-                  <h2 className="text-xl font-bold text-gray-900">Teacher Attendance</h2>
-                  <p className="text-sm text-gray-500 mt-1">Select a date to view attendance logs</p>
+                  <h2 className="text-lg font-semibold text-slate-900">Teacher Attendance</h2>
+                  <p className="text-sm text-slate-500 mt-0.5">Select a date to view attendance logs.</p>
                 </div>
                 <input 
                   type="date" 
@@ -148,21 +167,21 @@ export default function PrincipalClient({ schoolId, schoolName, profileName, stu
                   onChange={(e) => {
                     router.push(`?date=${e.target.value}`);
                   }}
-                  className="border border-gray-200 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-indigo-500 bg-white text-gray-700 font-medium cursor-pointer shadow-sm"
+                  className="border border-gray-200 bg-white rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 text-sm font-medium cursor-pointer min-h-[44px] md:min-h-[40px] w-full sm:w-auto"
                 />
               </div>
-              <div className="p-6">
+              <div className="p-4 md:p-6">
                 {(!teacherAttendance || teacherAttendance.length === 0) ? (
-                  <p className="text-gray-500 text-center py-10 font-medium">No teachers marked attendance on {new Date(initialDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}.</p>
+                  <p className="text-slate-500 text-sm text-center py-12">No teachers marked attendance on {new Date(initialDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}.</p>
                 ) : (
-                  <ul className="space-y-3">
+                  <ul className="space-y-3 max-w-3xl">
                     {teacherAttendance.map((ta, i) => (
-                      <li key={i} className="p-4 border border-gray-100 rounded-xl bg-gray-50 flex justify-between items-center">
+                      <li key={i} className="p-4 border border-gray-200 rounded-xl bg-white flex justify-between items-center hover:border-gray-300 transition-colors">
                         <div>
-                          <p className="font-bold text-gray-900">{ta.profiles?.name || 'Unknown Teacher'}</p>
-                          <p className="text-sm text-gray-500">Class {ta.profiles?.class_id || 'N/A'}</p>
+                          <p className="font-semibold text-slate-900 text-sm">{ta.profiles?.name || 'Unknown Teacher'}</p>
+                          <p className="text-xs text-slate-500 mt-0.5">Class {ta.profiles?.class_id || 'N/A'}</p>
                         </div>
-                        <span className="bg-green-100 text-green-700 font-bold px-4 py-2 rounded-lg text-sm">Present</span>
+                        <span className="bg-emerald-50 text-emerald-700 font-medium px-3 py-1 rounded-lg text-xs border border-emerald-100/50">Present</span>
                       </li>
                     ))}
                   </ul>
