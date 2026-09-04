@@ -16,23 +16,38 @@ export default function StudentList({ students, absentIds, toggleAbsent }: Stude
         </div>
         Mark Absentees
       </h2>
-      <div className="grid grid-cols-2 gap-3">
+      <ul className="space-y-3">
         {students.map((student) => {
           const isAbsent = absentIds.includes(student.id);
           return (
-            <button
+            <li
               key={student.id}
-              onClick={() => toggleAbsent(student.id)}
-              className={`p-4 rounded-xl border text-left flex flex-col transition-all duration-200 active:scale-[0.97] min-h-[44px] ${
-                isAbsent ? 'bg-red-50 border-red-300 text-red-700' : 'bg-gray-50/50 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+              className={`p-4 rounded-xl border flex items-center justify-between transition-all duration-200 ${
+                isAbsent ? 'bg-red-50/50 border-red-200' : 'bg-gray-50/50 border-gray-200'
               }`}
             >
-              <span className="font-semibold">{student.name}</span>
-              <span className="text-xs text-gray-500 mt-1">Roll: {student.roll}</span>
-            </button>
+              <div className="flex items-center space-x-4">
+                <span className={`w-9 h-9 rounded-lg flex items-center justify-center font-bold text-sm border ${isAbsent ? 'bg-red-100 text-red-700 border-red-200' : 'bg-gray-200 text-gray-600 border-gray-300'}`}>
+                  {student.roll}
+                </span>
+                <div>
+                  <span className={`font-semibold block ${isAbsent ? 'text-red-900' : 'text-gray-900'}`}>{student.name}</span>
+                </div>
+              </div>
+              <button
+                onClick={() => toggleAbsent(student.id)}
+                className={`w-10 h-10 rounded-xl font-bold text-lg flex items-center justify-center transition-all duration-200 active:scale-[0.95] ${
+                  isAbsent 
+                    ? 'bg-red-500 text-white shadow-md shadow-red-500/20' 
+                    : 'bg-white text-gray-400 border border-gray-200 hover:bg-gray-50 hover:text-gray-600'
+                }`}
+              >
+                A
+              </button>
+            </li>
           );
         })}
-      </div>
+      </ul>
     </div>
   );
 }
