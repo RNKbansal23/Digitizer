@@ -39,6 +39,8 @@ export default function TeacherClient({ schoolId, classId, teacherName, schoolNa
   const [announcement, setAnnouncement] = useState({ type: 'PTM', message: '' });
   const [aiPrompt, setAiPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [markedPresent, setMarkedPresent] = useState(false);
 
   // Calendar State
@@ -185,67 +187,77 @@ export default function TeacherClient({ schoolId, classId, teacherName, schoolNa
       <main className="w-full max-w-3xl bg-white min-h-screen md:min-h-0 md:my-8 md:rounded-xl md:border md:border-gray-200 relative pb-[120px] md:pb-8 flex flex-col">
         
         {/* Header */}
-        <header className="p-4 md:p-6 border-b border-gray-100 flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight mb-1">Class {classId}</h1>
-            <p className="text-indigo-600 font-semibold text-xs uppercase tracking-wider">{schoolName}</p>
-            <div className="mt-3 flex items-center space-x-2">
-              <span className="text-slate-500 text-sm font-medium">Date</span>
-              <input 
-                type="date" 
-                value={selectedDate} 
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="border border-gray-200 rounded-lg p-1.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500 bg-white text-slate-900 font-medium cursor-pointer"
-              />
-              {isLocked && <span className="text-xs bg-red-50 text-red-700 px-2 py-1 rounded-md font-medium border border-red-100/50">Locked</span>}
+        <header className="border-b border-gray-100 bg-white md:rounded-t-xl overflow-hidden shadow-sm">
+          <div className="p-4 md:p-6 flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 bg-[#FAF9F6]/50">
+            <div>
+              <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight mb-1 flex items-center">
+                <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-violet-500 rounded-lg flex items-center justify-center mr-3 shadow-sm shadow-indigo-500/20 text-white">
+                  <School size={16} />
+                </div>
+                Class {classId}
+              </h1>
+              <p className="text-indigo-600 font-bold text-xs uppercase tracking-widest pl-11">{schoolName}</p>
+              
+              <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-3">
+                <div className="flex items-center space-x-2 bg-white border border-gray-200 rounded-xl px-3 py-2 shadow-sm">
+                  <span className="text-slate-400 text-xs font-bold uppercase tracking-wider">Date</span>
+                  <input 
+                    type="date" 
+                    value={selectedDate} 
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                    className="text-sm outline-none bg-transparent text-slate-900 font-bold cursor-pointer"
+                  />
+                </div>
+                {isLocked && <span className="text-xs bg-[#FFF0EB] text-[#FF7F50] px-3 py-2 rounded-xl font-bold border border-[#FFD8CD]">Locked</span>}
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-3 w-full sm:w-auto">
+              {!isReadOnly && (
+                <button 
+                  onClick={markSelfAttendance}
+                  disabled={markedPresent}
+                  className={`flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-[0.97] flex items-center justify-center min-h-[44px] md:min-h-[40px] ${markedPresent ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 cursor-default' : 'bg-indigo-50 border border-indigo-100 text-indigo-700 hover:bg-indigo-100'}`}
+                >
+                  {markedPresent ? (
+                    <><CheckCircle2 size={16} className="mr-2" /> Present</>
+                  ) : (
+                    'Mark Present'
+                  )}
+                </button>
+              )}
+              <form action="/auth/signout" method="post" className="flex-none">
+                <button 
+                  type="submit"
+                  className="flex items-center justify-center space-x-2 bg-slate-100 border border-transparent text-slate-600 hover:bg-slate-200 hover:text-slate-800 px-4 py-2.5 rounded-xl transition-all active:scale-[0.97] min-h-[44px] sm:w-auto w-full font-bold"
+                >
+                  <LogOut size={16} />
+                  <span className="text-sm hidden sm:inline">Sign Out</span>
+                </button>
+              </form>
             </div>
           </div>
-          
-          <div className="flex items-center space-x-3 w-full sm:w-auto">
-            {!isReadOnly && (
-              <button 
-                onClick={markSelfAttendance}
-                disabled={markedPresent}
-                className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center justify-center min-h-[44px] md:min-h-[40px] ${markedPresent ? 'bg-emerald-50 text-emerald-700 border border-emerald-100/50 cursor-default' : 'bg-white border border-gray-200 text-slate-700 hover:bg-gray-50'}`}
-              >
-                {markedPresent ? (
-                  <><CheckCircle2 size={16} className="mr-2" /> Present</>
-                ) : (
-                  'Mark Self Attendance'
-                )}
-              </button>
-            )}
-            <form action="/auth/signout" method="post" className="flex-none">
-              <button 
-                type="submit"
-                className="flex items-center justify-center space-x-2 bg-white border border-gray-200 text-slate-700 hover:bg-gray-50 px-4 py-2 rounded-xl transition-colors active:scale-[0.97] min-h-[44px] sm:w-auto w-full"
-              >
-                <LogOut size={18} />
-                <span className="font-bold text-sm hidden sm:inline">Sign Out</span>
-              </button>
-            </form>
-          </div>
 
-          <div className="px-4 sm:px-8 pt-2">
-            <div className="flex overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
-              <div className="flex bg-indigo-800/40 p-1.5 rounded-2xl inline-flex min-w-max backdrop-blur-sm">
+          <div className="px-4 md:px-6 py-4 bg-white">
+            <div className="flex overflow-x-auto scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+              <div className="flex bg-slate-100/80 p-1.5 rounded-2xl inline-flex min-w-max">
                 <button 
                   onClick={() => setActiveTab('attendance')} 
-                  className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 min-h-[44px] ${activeTab === 'attendance' ? 'bg-white text-indigo-700 shadow-lg scale-[1.02]' : 'text-indigo-100 hover:text-white hover:bg-white/10 active:scale-[0.97]'}`}
+                  className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 min-h-[44px] ${activeTab === 'attendance' ? 'bg-white text-indigo-700 shadow-sm scale-[1.02] border border-gray-200/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 active:scale-[0.97]'}`}
                 >
                   <Users size={16} className="inline mr-2" />
                   Attendance
                 </button>
                 <button 
                   onClick={() => setActiveTab('students')} 
-                  className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 min-h-[44px] ${activeTab === 'students' ? 'bg-white text-indigo-700 shadow-lg scale-[1.02]' : 'text-indigo-100 hover:text-white hover:bg-white/10 active:scale-[0.97]'}`}
+                  className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 min-h-[44px] ${activeTab === 'students' ? 'bg-white text-indigo-700 shadow-sm scale-[1.02] border border-gray-200/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 active:scale-[0.97]'}`}
                 >
                   <BookOpen size={16} className="inline mr-2" />
                   Manage Students
                 </button>
                 <button 
                   onClick={() => setActiveTab('announcements')} 
-                  className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 min-h-[44px] ${activeTab === 'announcements' ? 'bg-white text-indigo-700 shadow-lg scale-[1.02]' : 'text-indigo-100 hover:text-white hover:bg-white/10 active:scale-[0.97]'}`}
+                  className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 min-h-[44px] ${activeTab === 'announcements' ? 'bg-white text-indigo-700 shadow-sm scale-[1.02] border border-gray-200/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 active:scale-[0.97]'}`}
                 >
                   <Megaphone size={16} className="inline mr-2" />
                   Announcements
@@ -360,7 +372,7 @@ export default function TeacherClient({ schoolId, classId, teacherName, schoolNa
                 </div>
                 
                 <div className="p-6">
-                  <form onSubmit={handleAnnouncementSubmit} className="space-y-4">
+                  <form onSubmit={sendAnnouncement} className="space-y-4">
                     <select value={announcement.type} onChange={e => setAnnouncement({...announcement, type: e.target.value})} className="w-full border border-gray-200 p-3 rounded-xl bg-[#FAF9F6] text-slate-700 font-bold focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-colors">
                       <option value="PTM">Parents Teacher Meeting (PTM)</option>
                       <option value="Holiday">School Holiday</option>
