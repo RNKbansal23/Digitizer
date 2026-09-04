@@ -40,6 +40,7 @@ export default async function PrincipalClassView({ params }: { params: { classId
         classId={params.classId}
         teacherName={profile.name + " (Principal)"}
         schoolName={schoolName}
+        isReadOnly={true}
       />
     </div>
   );

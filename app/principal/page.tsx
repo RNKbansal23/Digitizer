@@ -2,7 +2,7 @@ import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 import PrincipalClient from './PrincipalClient';
 
-export default async function PrincipalDashboard() {
+export default async function PrincipalDashboard({ searchParams }: { searchParams: { date?: string } }) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
@@ -48,13 +48,16 @@ export default async function PrincipalDashboard() {
   // Merge classes
   const combinedClasses = [...(legacyClasses || []), ...(newClasses || [])];
 
-  // Fetch today's teacher attendance
+  // Fetch teacher attendance
   const todayStr = new Date().toISOString().split('T')[0];
+  const selectedDate = searchParams.date || todayStr;
+  
   const { data: teacherAttendance } = await supabase
     .from('teacher_attendance')
-    .select('*, profiles(name, class_id)')
+    .select('*, profiles!inner(name, class_id, role)')
     .eq('school_id', profile.school_id)
-    .eq('date', todayStr);
+    .eq('date', selectedDate)
+    .eq('profiles.role', 'teacher');
 
   return (
     <PrincipalClient 
@@ -65,6 +68,7 @@ export default async function PrincipalDashboard() {
       teacherCount={teacherCount || 0}
       classes={combinedClasses}
       teacherAttendance={teacherAttendance || []}
+      initialDate={selectedDate}
     />
   );
 }

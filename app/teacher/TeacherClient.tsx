@@ -22,9 +22,10 @@ interface TeacherClientProps {
   classId: string;
   teacherName: string;
   schoolName: string;
+  isReadOnly?: boolean;
 }
 
-export default function TeacherClient({ schoolId, classId, teacherName, schoolName }: TeacherClientProps) {
+export default function TeacherClient({ schoolId, classId, teacherName, schoolName, isReadOnly = false }: TeacherClientProps) {
   const [students, setStudents] = useState<Student[]>([]);
   const [absentIds, setAbsentIds] = useState<string[]>([]);
   const [homeworkImage, setHomeworkImage] = useState<string | null>(null);
@@ -40,6 +41,24 @@ export default function TeacherClient({ schoolId, classId, teacherName, schoolNa
   const [isGenerating, setIsGenerating] = useState(false);
   const [markedPresent, setMarkedPresent] = useState(false);
 
+  // Calendar State
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [isLocked, setIsLocked] = useState(false);
+
+  // Check lock logic: Locked if before the most recent Saturday
+  useEffect(() => {
+    const date = new Date(selectedDate);
+    const now = new Date();
+    const lastSaturday = new Date(now);
+    const day = now.getDay(); // 0=Sun, 6=Sat
+    const daysSinceSaturday = (day + 1) % 7; 
+    lastSaturday.setDate(now.getDate() - daysSinceSaturday);
+    lastSaturday.setHours(0,0,0,0);
+    
+    setIsLocked(date < lastSaturday);
+  }, [selectedDate]);
+
+  // Fetch students
   useEffect(() => {
     fetch(`/api/students?class_id=${classId}&school_id=${schoolId}`)
       .then(res => res.json())
@@ -48,32 +67,52 @@ export default function TeacherClient({ schoolId, classId, teacherName, schoolNa
       });
   }, [classId, schoolId]);
 
+  // Fetch existing attendance log for the selected date
+  useEffect(() => {
+    setHomeworkImage(null);
+    setAbsentIds([]);
+    fetch(`/api/get-log?date=${selectedDate}&class_id=${classId}&school_id=${schoolId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.log) {
+          if (data.log.homework_base64) setHomeworkImage(data.log.homework_base64);
+          if (data.absences) setAbsentIds(data.absences);
+        }
+      });
+  }, [selectedDate, classId, schoolId]);
+
   const toggleAbsent = (id: string) => {
+    if (isLocked || isReadOnly) return;
     setAbsentIds((prev) => prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]);
   };
 
-  const submitLog = async () => {
+  const saveAttendance = async () => {
+    if (isLocked) {
+      alert("This date is locked and cannot be edited.");
+      return;
+    }
     setIsSubmitting(true);
     try {
       const res = await fetch('/api/submit-log', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ absentIds, homeworkImage, date: new Date().toISOString(), class_id: classId, school_id: schoolId })
+        body: JSON.stringify({ absentIds, homeworkImage, date: selectedDate, class_id: classId, school_id: schoolId })
       });
       if (res.ok) {
-        const absentNames = students.filter(s => absentIds.includes(s.id)).map(s => s.name).join(', ') || 'None';
-        const msg = `Good Morning Parents (Class ${classId})!%0A%0AToday's attendance is marked.%0AAbsentees: ${absentNames}%0A%0AHomework has been uploaded to the Parent Dashboard.`;
-        window.open(`https://wa.me/?text=${msg}`, '_blank');
-        
-        setAbsentIds([]);
-        setHomeworkImage(null);
+        alert('Attendance & Homework saved successfully!');
       } else {
-        alert('Error submitting log.');
+        alert('Error saving log.');
       }
     } catch (error) {
-      alert('Error submitting log.');
+      alert('Error saving log.');
     }
     setIsSubmitting(false);
+  };
+
+  const notifyParents = () => {
+    const absentNames = students.filter(s => absentIds.includes(s.id)).map(s => s.name).join(', ') || 'None';
+    const msg = `Good Morning Parents (Class ${classId})!%0A%0AAttendance for ${new Date(selectedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} is marked.%0AAbsentees: ${absentNames}%0A%0AHomework has been uploaded to the Parent Dashboard.`;
+    window.open(`https://wa.me/?text=${msg}`, '_blank');
   };
 
   const addStudent = async (e: React.FormEvent) => {
@@ -148,20 +187,31 @@ export default function TeacherClient({ schoolId, classId, teacherName, schoolNa
           <div>
             <h1 className="text-3xl font-extrabold text-gray-900 mb-1">Class {classId}</h1>
             <p className="text-indigo-600 font-bold text-sm uppercase tracking-wider">{schoolName}</p>
-            <p className="text-gray-500 text-sm mt-1 font-medium">Today: {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
+            <div className="mt-2 flex items-center space-x-2">
+              <span className="text-gray-500 text-sm font-medium">Date:</span>
+              <input 
+                type="date" 
+                value={selectedDate} 
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="border border-gray-200 rounded-lg p-1.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500 bg-gray-50 text-gray-700 font-medium cursor-pointer"
+              />
+              {isLocked && <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-md font-bold">Locked</span>}
+            </div>
           </div>
           <div className="flex items-center space-x-3">
-            <button 
-              onClick={markSelfAttendance}
-              disabled={markedPresent}
-              className={`px-4 py-2 rounded-xl font-bold transition-all duration-200 active:scale-[0.97] min-h-[44px] flex items-center ${markedPresent ? 'bg-green-100 text-green-700 cursor-default' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'}`}
-            >
-              {markedPresent ? (
-                <><CheckCircle2 size={18} className="mr-2" /> Present Today</>
-              ) : (
-                'Mark Self Attendance'
-              )}
-            </button>
+            {!isReadOnly && (
+              <button 
+                onClick={markSelfAttendance}
+                disabled={markedPresent}
+                className={`px-4 py-2 rounded-xl font-bold transition-all duration-200 active:scale-[0.97] min-h-[44px] flex items-center ${markedPresent ? 'bg-green-100 text-green-700 cursor-default' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'}`}
+              >
+                {markedPresent ? (
+                  <><CheckCircle2 size={18} className="mr-2" /> Present Today</>
+                ) : (
+                  'Mark Self Attendance'
+                )}
+              </button>
+            )}
             <form action="/auth/signout" method="post">
               <button className="text-red-500 bg-red-50/50 p-3 rounded-xl border border-transparent hover:border-red-100 hover:bg-red-50 transition-all duration-200 active:scale-[0.97] min-h-[44px]">
                 <LogOut size={20} />
@@ -181,41 +231,50 @@ export default function TeacherClient({ schoolId, classId, teacherName, schoolNa
           {activeTab === 'attendance' && (
             <div className="space-y-6">
               <StudentList students={students} absentIds={absentIds} toggleAbsent={toggleAbsent} />
-              <CameraCapture image={homeworkImage} setImage={setHomeworkImage} />
-
-              <div className="fixed bottom-0 left-0 right-0 p-6 bg-white/90 backdrop-blur-md border-t border-gray-200 flex justify-center z-20">
-                <button
-                  onClick={submitLog}
-                  disabled={isSubmitting || !homeworkImage}
-                  className="w-full max-w-md flex items-center justify-center bg-[#25D366] text-white py-3.5 rounded-xl font-bold text-lg disabled:opacity-70 disabled:transform-none transition-all duration-200 active:scale-[0.97] hover:bg-[#128C7E] min-h-[44px]"
-                >
-                  {isSubmitting ? 'Sending...' : (
-                    <>
-                      <WhatsAppIcon className="mr-3" /> 
+              
+              {!isReadOnly && (
+                <>
+                  <CameraCapture image={homeworkImage} setImage={setHomeworkImage} />
+                  <div className="fixed bottom-0 left-0 right-0 p-6 bg-white/90 backdrop-blur-md border-t border-gray-200 flex justify-center space-x-4 z-20">
+                    <button
+                      onClick={saveAttendance}
+                      disabled={isSubmitting || isLocked}
+                      className="w-full max-w-xs flex items-center justify-center bg-indigo-600 text-white py-3.5 rounded-xl font-bold text-lg disabled:opacity-70 disabled:transform-none transition-all duration-200 active:scale-[0.97] hover:bg-indigo-700 min-h-[44px]"
+                    >
+                      {isLocked ? 'Locked' : isSubmitting ? 'Saving...' : 'Save & Update'}
+                    </button>
+                    <button
+                      onClick={notifyParents}
+                      disabled={isLocked && absentIds.length === 0}
+                      className="w-full max-w-xs flex items-center justify-center bg-[#25D366] text-white py-3.5 rounded-xl font-bold text-lg disabled:opacity-70 disabled:transform-none transition-all duration-200 active:scale-[0.97] hover:bg-[#128C7E] min-h-[44px]"
+                    >
+                      <WhatsAppIcon className="mr-2" /> 
                       Notify Parents
-                    </>
-                  )}
-                </button>
-              </div>
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           )}
 
           {activeTab === 'students' && (
             <div className="space-y-8">
-              <div className="bg-white rounded-2xl border border-gray-200 p-6">
-                <h2 className="text-xl font-bold mb-6 flex items-center text-gray-900">
-                  <div className="bg-indigo-50 p-2 rounded-xl mr-3">
-                    <UserPlus className="text-indigo-600" size={20} />
-                  </div>
-                  Add New Student
-                </h2>
-                <form onSubmit={addStudent} className="space-y-4">
-                  <input type="text" placeholder="Student Name" required value={newStudent.name} onChange={e => setNewStudent({...newStudent, name: e.target.value})} className="w-full border border-gray-200 p-3.5 rounded-xl bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-200 min-h-[44px]" />
-                  <input type="number" placeholder="Roll Number" required value={newStudent.roll} onChange={e => setNewStudent({...newStudent, roll: e.target.value})} className="w-full border border-gray-200 p-3.5 rounded-xl bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-200 min-h-[44px]" />
-                  <input type="tel" placeholder="Parent WhatsApp (e.g. 919876543210)" required value={newStudent.parent_phone} onChange={e => setNewStudent({...newStudent, parent_phone: e.target.value})} className="w-full border border-gray-200 p-3.5 rounded-xl bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-200 min-h-[44px]" />
-                  <button type="submit" className="w-full bg-[#4F46E5] text-white py-3.5 rounded-xl font-bold hover:bg-indigo-700 transition-all duration-200 active:scale-[0.97] min-h-[44px]">Add Student</button>
-                </form>
-              </div>
+              {!isReadOnly && (
+                <div className="bg-white rounded-2xl border border-gray-200 p-6">
+                  <h2 className="text-xl font-bold mb-6 flex items-center text-gray-900">
+                    <div className="bg-indigo-50 p-2 rounded-xl mr-3">
+                      <UserPlus className="text-indigo-600" size={20} />
+                    </div>
+                    Add New Student
+                  </h2>
+                  <form onSubmit={addStudent} className="space-y-4">
+                    <input type="text" placeholder="Student Name" required value={newStudent.name} onChange={e => setNewStudent({...newStudent, name: e.target.value})} className="w-full border border-gray-200 p-3.5 rounded-xl bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-200 min-h-[44px]" />
+                    <input type="number" placeholder="Roll Number" required value={newStudent.roll} onChange={e => setNewStudent({...newStudent, roll: e.target.value})} className="w-full border border-gray-200 p-3.5 rounded-xl bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-200 min-h-[44px]" />
+                    <input type="tel" placeholder="Parent WhatsApp (e.g. 919876543210)" required value={newStudent.parent_phone} onChange={e => setNewStudent({...newStudent, parent_phone: e.target.value})} className="w-full border border-gray-200 p-3.5 rounded-xl bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all duration-200 min-h-[44px]" />
+                    <button type="submit" className="w-full bg-[#4F46E5] text-white py-3.5 rounded-xl font-bold hover:bg-indigo-700 transition-all duration-200 active:scale-[0.97] min-h-[44px]">Add Student</button>
+                  </form>
+                </div>
+              )}
               
               <div className="bg-white rounded-2xl border border-gray-200 p-6">
                 <h3 className="font-bold mb-4 text-gray-900 flex justify-between items-center">
@@ -239,58 +298,66 @@ export default function TeacherClient({ schoolId, classId, teacherName, schoolNa
 
           {activeTab === 'announcements' && (
             <div className="space-y-8">
-              {/* AI Assistant Card */}
-              <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl border border-indigo-100 p-6">
-                <h2 className="text-xl font-bold mb-4 flex items-center text-indigo-900">
-                  <div className="bg-white p-2 rounded-xl mr-3 shadow-sm border border-indigo-50">
-                    <Sparkles className="text-indigo-600" size={20} />
-                  </div>
-                  AI Assistant
-                </h2>
-                <div className="space-y-3">
-                  <input 
-                    type="text" 
-                    placeholder="E.g. 'holiday diwali' or 'PTM tomorrow'" 
-                    value={aiPrompt}
-                    onChange={e => setAiPrompt(e.target.value)}
-                    className="w-full border border-indigo-200 p-3.5 rounded-xl bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all duration-200 min-h-[44px]" 
-                  />
-                  <button 
-                    onClick={generateWithGemini}
-                    disabled={isGenerating || !aiPrompt}
-                    className="w-full bg-[#4F46E5] text-white py-3.5 rounded-xl font-bold flex items-center justify-center hover:bg-indigo-700 transition-all duration-200 active:scale-[0.97] disabled:opacity-70 disabled:transform-none min-h-[44px]"
-                  >
-                    {isGenerating ? 'Generating...' : (
-                      <>
-                        <Sparkles className="mr-2" size={18} /> 
-                        Draft with Gemini
-                      </>
-                    )}
-                  </button>
+              {isReadOnly ? (
+                <div className="bg-white rounded-2xl border border-gray-200 p-6">
+                  <p className="text-gray-500 text-center font-medium">Principals cannot send announcements directly from a class view.</p>
                 </div>
-              </div>
-
-              {/* Manual Announcement Form */}
-              <div className="bg-white rounded-2xl border border-gray-200 p-6">
-                <h2 className="text-xl font-bold mb-6 flex items-center text-gray-900">
-                  <div className="bg-orange-50 p-2 rounded-xl mr-3">
-                    <Megaphone className="text-orange-600" size={20} />
+              ) : (
+                <>
+                  {/* AI Assistant Card */}
+                  <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl border border-indigo-100 p-6">
+                    <h2 className="text-xl font-bold mb-4 flex items-center text-indigo-900">
+                      <div className="bg-white p-2 rounded-xl mr-3 shadow-sm border border-indigo-50">
+                        <Sparkles className="text-indigo-600" size={20} />
+                      </div>
+                      AI Assistant
+                    </h2>
+                    <div className="space-y-3">
+                      <input 
+                        type="text" 
+                        placeholder="E.g. 'holiday diwali' or 'PTM tomorrow'" 
+                        value={aiPrompt}
+                        onChange={e => setAiPrompt(e.target.value)}
+                        className="w-full border border-indigo-200 p-3.5 rounded-xl bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all duration-200 min-h-[44px]" 
+                      />
+                      <button 
+                        onClick={generateWithGemini}
+                        disabled={isGenerating || !aiPrompt}
+                        className="w-full bg-[#4F46E5] text-white py-3.5 rounded-xl font-bold flex items-center justify-center hover:bg-indigo-700 transition-all duration-200 active:scale-[0.97] disabled:opacity-70 disabled:transform-none min-h-[44px]"
+                      >
+                        {isGenerating ? 'Generating...' : (
+                          <>
+                            <Sparkles className="mr-2" size={18} /> 
+                            Draft with Gemini
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </div>
-                  Review & Send
-                </h2>
-              <form onSubmit={sendAnnouncement} className="space-y-4">
-                <select value={announcement.type} onChange={e => setAnnouncement({...announcement, type: e.target.value})} className="w-full border border-gray-200 p-3.5 rounded-xl bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-orange-500 outline-none font-semibold text-gray-700 transition-all duration-200 cursor-pointer min-h-[44px]">
-                  <option value="PTM">Parents Teacher Meeting (PTM)</option>
-                  <option value="Holiday">School Holiday</option>
-                  <option value="General">General Notice</option>
-                </select>
-                <textarea placeholder="Type your message here..." required rows={5} value={announcement.message} onChange={e => setAnnouncement({...announcement, message: e.target.value})} className="w-full border border-gray-200 p-3.5 rounded-xl bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-orange-500 outline-none transition-all duration-200 resize-none" />
-                <button type="submit" className="w-full bg-[#25D366] text-white py-3.5 rounded-xl font-bold flex items-center justify-center hover:bg-[#128C7E] transition-all duration-200 active:scale-[0.97] min-h-[44px]">
-                  <WhatsAppIcon className="mr-3" /> 
-                  Send via WhatsApp
-                </button>
-              </form>
-            </div>
+
+                  {/* Manual Announcement Form */}
+                  <div className="bg-white rounded-2xl border border-gray-200 p-6">
+                    <h2 className="text-xl font-bold mb-6 flex items-center text-gray-900">
+                      <div className="bg-orange-50 p-2 rounded-xl mr-3">
+                        <Megaphone className="text-orange-600" size={20} />
+                      </div>
+                      Review & Send
+                    </h2>
+                    <form onSubmit={sendAnnouncement} className="space-y-4">
+                      <select value={announcement.type} onChange={e => setAnnouncement({...announcement, type: e.target.value})} className="w-full border border-gray-200 p-3.5 rounded-xl bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-orange-500 outline-none font-semibold text-gray-700 transition-all duration-200 cursor-pointer min-h-[44px]">
+                        <option value="PTM">Parents Teacher Meeting (PTM)</option>
+                        <option value="Holiday">School Holiday</option>
+                        <option value="General">General Notice</option>
+                      </select>
+                      <textarea placeholder="Type your message here..." required rows={5} value={announcement.message} onChange={e => setAnnouncement({...announcement, message: e.target.value})} className="w-full border border-gray-200 p-3.5 rounded-xl bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-orange-500 outline-none transition-all duration-200 resize-none" />
+                      <button type="submit" className="w-full bg-[#25D366] text-white py-3.5 rounded-xl font-bold flex items-center justify-center hover:bg-[#128C7E] transition-all duration-200 active:scale-[0.97] min-h-[44px]">
+                        <WhatsAppIcon className="mr-3" /> 
+                        Send via WhatsApp
+                      </button>
+                    </form>
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>

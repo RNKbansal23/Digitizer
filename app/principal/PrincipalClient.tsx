@@ -12,9 +12,10 @@ interface PrincipalClientProps {
   teacherCount: number;
   classes: any[];
   teacherAttendance: any[];
+  initialDate: string;
 }
 
-export default function PrincipalClient({ schoolId, schoolName, profileName, studentCount, teacherCount, classes, teacherAttendance }: PrincipalClientProps) {
+export default function PrincipalClient({ schoolId, schoolName, profileName, studentCount, teacherCount, classes, teacherAttendance, initialDate }: PrincipalClientProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'classes' | 'attendance'>('classes');
   
@@ -136,13 +137,23 @@ export default function PrincipalClient({ schoolId, schoolName, profileName, stu
 
           {activeTab === 'attendance' && (
             <>
-              <div className="p-6 border-b border-gray-100 bg-gray-50/50">
-                <h2 className="text-xl font-bold text-gray-900">Today's Teacher Attendance</h2>
-                <p className="text-sm text-gray-500 mt-1">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
+              <div className="p-6 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">Teacher Attendance</h2>
+                  <p className="text-sm text-gray-500 mt-1">Select a date to view attendance logs</p>
+                </div>
+                <input 
+                  type="date" 
+                  value={initialDate}
+                  onChange={(e) => {
+                    router.push(`?date=${e.target.value}`);
+                  }}
+                  className="border border-gray-200 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-indigo-500 bg-white text-gray-700 font-medium cursor-pointer shadow-sm"
+                />
               </div>
               <div className="p-6">
                 {(!teacherAttendance || teacherAttendance.length === 0) ? (
-                  <p className="text-gray-500 text-center py-10 font-medium">No teachers have marked attendance today.</p>
+                  <p className="text-gray-500 text-center py-10 font-medium">No teachers marked attendance on {new Date(initialDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}.</p>
                 ) : (
                   <ul className="space-y-3">
                     {teacherAttendance.map((ta, i) => (
