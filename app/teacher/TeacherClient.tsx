@@ -379,6 +379,30 @@ export default function TeacherClient({ schoolId, classId, teacherName, schoolNa
                       <option value="General">General Notice</option>
                     </select>
                     <textarea placeholder="Type your friendly message here..." required rows={5} value={announcement.message} onChange={e => setAnnouncement({...announcement, message: e.target.value})} className="w-full border border-gray-200 p-4 rounded-xl bg-white placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-colors resize-none text-sm font-medium" />
+                    
+                    <div className="flex flex-col space-y-2 bg-indigo-50/50 p-4 rounded-xl border border-indigo-100/50">
+                      <div className="flex items-center space-x-2">
+                        <Sparkles size={16} className="text-indigo-600" />
+                        <span className="text-sm font-bold text-indigo-900">AI Assistant</span>
+                      </div>
+                      <div className="flex space-x-2">
+                        <input
+                          type="text"
+                          placeholder="e.g. remind parents about tomorrow's math test..."
+                          value={aiPrompt}
+                          onChange={(e) => setAiPrompt(e.target.value)}
+                          className="flex-1 border border-indigo-200/60 p-2.5 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 outline-none text-sm transition-colors"
+                        />
+                        <button
+                          type="button"
+                          onClick={generateWithGemini}
+                          disabled={isGenerating || !aiPrompt}
+                          className="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 px-4 py-2.5 rounded-lg font-bold text-sm transition-colors active:scale-[0.97] disabled:opacity-50"
+                        >
+                          {isGenerating ? '...' : 'Generate'}
+                        </button>
+                      </div>
+                    </div>
                     <button type="submit" className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white py-3.5 rounded-xl font-bold text-sm flex items-center justify-center hover:from-emerald-400 hover:to-teal-400 transition-all duration-200 active:scale-[0.97] min-h-[44px] mt-2 shadow-lg shadow-emerald-500/20">
                       <WhatsAppIcon className="mr-2 w-5 h-5" /> 
                       Send via WhatsApp

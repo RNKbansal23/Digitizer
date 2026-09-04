@@ -41,17 +41,17 @@ export default function LoginPage() {
       <div className="absolute -bottom-8 right-20 w-72 h-72 bg-sky-300 rounded-full mix-blend-multiply filter blur-2xl opacity-40 animate-blob"></div>
 
       {/* Floating Decorative SVGs */}
-      <div className="absolute top-1/4 left-10 md:left-32 text-indigo-400/50 animate-float">
-        <GraduationCap size={64} strokeWidth={1.5} />
+      <div className="absolute top-[12%] left-4 sm:left-12 md:left-24 text-indigo-400/50 animate-float">
+        <GraduationCap className="w-10 h-10 sm:w-16 sm:h-16" strokeWidth={1.5} />
       </div>
-      <div className="absolute top-1/3 right-10 md:right-32 text-amber-400/60 animate-float float-delay-1">
-        <Sparkles size={48} strokeWidth={1.5} />
+      <div className="absolute top-[18%] right-4 sm:right-12 md:right-24 text-amber-400/60 animate-float float-delay-1">
+        <Sparkles className="w-8 h-8 sm:w-12 sm:h-12" strokeWidth={1.5} />
       </div>
-      <div className="absolute bottom-1/4 left-16 md:left-40 text-sky-400/50 animate-float float-delay-2">
-        <BookOpen size={56} strokeWidth={1.5} />
+      <div className="absolute bottom-[12%] left-8 sm:left-16 md:left-32 text-sky-400/50 animate-float float-delay-2">
+        <BookOpen className="w-10 h-10 sm:w-14 sm:h-14" strokeWidth={1.5} />
       </div>
-      <div className="absolute bottom-1/3 right-16 md:right-40 text-[#FF7F50]/50 animate-float float-delay-3">
-        <MessageCircle size={56} strokeWidth={1.5} />
+      <div className="absolute bottom-[18%] right-8 sm:right-16 md:right-32 text-[#FF7F50]/50 animate-float float-delay-3">
+        <MessageCircle className="w-10 h-10 sm:w-14 sm:h-14" strokeWidth={1.5} />
       </div>
 
       {/* Glassmorphism Login Card */}
