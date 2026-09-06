@@ -175,6 +175,9 @@ export default function PrincipalClient({ schoolId, schoolName, profileName, stu
                         <div className="border border-gray-100 p-6 rounded-[20px] flex flex-col bg-white hover:-translate-y-1 hover:shadow-lg hover:border-indigo-100 cursor-pointer transition-all duration-300 h-full relative overflow-hidden group-active:scale-[0.97]">
                           <div className="flex justify-between items-start mb-5">
                             <span className="bg-indigo-50 text-indigo-600 font-bold px-3 py-1.5 rounded-lg text-xs tracking-wide">Class {c.class_name || c.class_id}</span>
+                            <span className="bg-emerald-50 text-emerald-600 font-bold px-2 py-1 rounded-md text-xs border border-emerald-100/50">
+                              {classStrengths[c.class_name || c.class_id] || 0} Students
+                            </span>
                           </div>
                           <span className="font-extrabold text-slate-900 text-lg tracking-tight">{c.teacher_name || c.name}</span>
                           <span className="text-sm text-slate-500 mt-1 font-medium">Class Teacher</span>
