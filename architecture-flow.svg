@@ -5,79 +5,21 @@
       <stop offset="0%" stop-color="#0f172a" />
       <stop offset="100%" stop-color="#1e1b4b" />
     </linearGradient>
-
-    <!-- Glowing filters -->
-    <filter id="glow-indigo" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="8" result="blur" />
-      <feComposite in="SourceGraphic" in2="blur" operator="over" />
-    </filter>
-    <filter id="glow-emerald" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="8" result="blur" />
-      <feComposite in="SourceGraphic" in2="blur" operator="over" />
-    </filter>
-    <filter id="glow-sky" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="8" result="blur" />
-      <feComposite in="SourceGraphic" in2="blur" operator="over" />
-    </filter>
-    <filter id="glow-amber" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="8" result="blur" />
-      <feComposite in="SourceGraphic" in2="blur" operator="over" />
-    </filter>
-
     <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
       <polygon points="0 0, 10 3.5, 0 7" fill="#64748b" />
     </marker>
   </defs>
 
   <style>
-    @keyframes dash {
-      to {
-        stroke-dashoffset: -20;
-      }
-    }
-    @keyframes pulse {
-      0% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.05); opacity: 0.8; }
-      100% { transform: scale(1); opacity: 1; }
-    }
-    @keyframes float {
-      0% { transform: translateY(0px); }
-      50% { transform: translateY(-10px); }
-      100% { transform: translateY(0px); }
-    }
-    .flow-line {
-      stroke: #64748b;
-      stroke-width: 2;
-      fill: none;
-      stroke-dasharray: 6 6;
-      animation: dash 1s linear infinite;
-    }
-    .flow-line-active {
-      stroke: #818cf8;
-      stroke-width: 2.5;
-      fill: none;
-      stroke-dasharray: 6 6;
-      animation: dash 0.8s linear infinite;
-    }
-    .flow-line-fast {
-      stroke: #34d399;
-      stroke-width: 2.5;
-      fill: none;
-      stroke-dasharray: 6 6;
-      animation: dash 0.5s linear infinite;
-    }
-    .box {
-      fill: rgba(30, 41, 59, 0.7);
-      stroke-width: 2;
-      rx: 16;
-    }
+    @keyframes dash { to { stroke-dashoffset: -20; } }
+    @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
+    .flow-line { stroke: #64748b; stroke-width: 2; fill: none; stroke-dasharray: 6 6; animation: dash 1s linear infinite; }
+    .flow-line-active { stroke: #818cf8; stroke-width: 2.5; fill: none; stroke-dasharray: 6 6; animation: dash 0.8s linear infinite; }
+    .flow-line-fast { stroke: #34d399; stroke-width: 2.5; fill: none; stroke-dasharray: 6 6; animation: dash 0.5s linear infinite; }
+    .box { fill: rgba(30, 41, 59, 0.7); stroke-width: 2; rx: 16; }
     .text-title { font-family: 'Inter', sans-serif; font-weight: 800; fill: #f8fafc; font-size: 18px; }
     .text-sub { font-family: 'Inter', sans-serif; font-weight: 500; fill: #94a3b8; font-size: 13px; }
     .text-badge { font-family: 'Inter', sans-serif; font-weight: 700; fill: #ffffff; font-size: 11px; }
-    
-    .anim-float { animation: float 6s ease-in-out infinite; transform-origin: center; }
-    .anim-float-d1 { animation: float 6s ease-in-out 1s infinite; transform-origin: center; }
-    .anim-float-d2 { animation: float 6s ease-in-out 2s infinite; transform-origin: center; }
   </style>
 
   <!-- Background -->
@@ -88,104 +30,69 @@
   <text x="500" y="75" text-anchor="middle" font-family="Inter, sans-serif" font-weight="500" font-size="14" fill="#94a3b8">Live Flow, Authentication &amp; Multi-Tenancy</text>
 
   <!-- ==================== LINES ==================== -->
-  
-  <!-- Parents to Next.js -->
   <path d="M 170 170 C 250 170, 300 280, 400 280" class="flow-line-active" marker-end="url(#arrowhead)" />
-  
-  <!-- Teachers to Next.js -->
   <path d="M 170 350 L 400 350" class="flow-line-active" marker-end="url(#arrowhead)" />
-  
-  <!-- Principals to Next.js -->
   <path d="M 170 530 C 250 530, 300 420, 400 420" class="flow-line-active" marker-end="url(#arrowhead)" />
-
-  <!-- Next.js to Supabase (Auth) -->
   <path d="M 600 350 L 730 250" class="flow-line-fast" marker-end="url(#arrowhead)" />
-  
-  <!-- Next.js to Supabase (DB) -->
   <path d="M 600 350 L 730 450" class="flow-line-fast" marker-end="url(#arrowhead)" />
-  
-  <!-- Next.js to External Services -->
   <path d="M 500 450 L 500 550" class="flow-line" marker-end="url(#arrowhead)" />
 
   <!-- ==================== NODES ==================== -->
 
-  <!-- PARENT NODE -->
-  <g class="anim-float" transform="translate(50, 130)">
-    <rect width="200" height="80" class="box" stroke="#38bdf8" filter="url(#glow-sky)" />
-    <text x="100" y="35" text-anchor="middle" class="text-title">Parents / Students</text>
-    <text x="100" y="55" text-anchor="middle" class="text-sub">Passwordless Link</text>
-    <rect x="145" y="-10" width="65" height="20" rx="10" fill="#0284c7" />
-    <text x="177.5" y="4" text-anchor="middle" class="text-badge">NO LOGIN</text>
-  </g>
+  <!-- PARENT NODE (x=50, y=130) -->
+  <rect x="50" y="130" width="200" height="80" class="box" stroke="#38bdf8" />
+  <text x="150" y="165" text-anchor="middle" class="text-title">Parents / Students</text>
+  <text x="150" y="185" text-anchor="middle" class="text-sub">Passwordless Link</text>
+  <rect x="195" y="120" width="65" height="20" rx="10" fill="#0284c7" />
+  <text x="227.5" y="134" text-anchor="middle" class="text-badge">NO LOGIN</text>
 
-  <!-- TEACHER NODE -->
-  <g class="anim-float-d1" transform="translate(50, 310)">
-    <rect width="200" height="80" class="box" stroke="#818cf8" filter="url(#glow-indigo)" />
-    <text x="100" y="35" text-anchor="middle" class="text-title">Teachers</text>
-    <text x="100" y="55" text-anchor="middle" class="text-sub">Manage Class &amp; Announce</text>
-    <rect x="145" y="-10" width="65" height="20" rx="10" fill="#4f46e5" />
-    <text x="177.5" y="4" text-anchor="middle" class="text-badge">STD AUTH</text>
-  </g>
+  <!-- TEACHER NODE (x=50, y=310) -->
+  <rect x="50" y="310" width="200" height="80" class="box" stroke="#818cf8" />
+  <text x="150" y="345" text-anchor="middle" class="text-title">Teachers</text>
+  <text x="150" y="365" text-anchor="middle" class="text-sub">Manage Class &amp; Announce</text>
+  <rect x="195" y="300" width="65" height="20" rx="10" fill="#4f46e5" />
+  <text x="227.5" y="314" text-anchor="middle" class="text-badge">STD AUTH</text>
 
-  <!-- PRINCIPAL NODE -->
-  <g class="anim-float-d2" transform="translate(50, 490)">
-    <rect width="200" height="80" class="box" stroke="#34d399" filter="url(#glow-emerald)" />
-    <text x="100" y="35" text-anchor="middle" class="text-title">Principals</text>
-    <text x="100" y="55" text-anchor="middle" class="text-sub">Monitor &amp; Onboard</text>
-    <rect x="145" y="-10" width="65" height="20" rx="10" fill="#059669" />
-    <text x="177.5" y="4" text-anchor="middle" class="text-badge">ADMIN AUTH</text>
-  </g>
+  <!-- PRINCIPAL NODE (x=50, y=490) -->
+  <rect x="50" y="490" width="200" height="80" class="box" stroke="#34d399" />
+  <text x="150" y="525" text-anchor="middle" class="text-title">Principals</text>
+  <text x="150" y="545" text-anchor="middle" class="text-sub">Monitor &amp; Onboard</text>
+  <rect x="195" y="480" width="65" height="20" rx="10" fill="#059669" />
+  <text x="227.5" y="494" text-anchor="middle" class="text-badge">ADMIN AUTH</text>
 
-  <!-- NEXT.JS APP ROUTER -->
-  <g transform="translate(400, 250)">
-    <rect width="200" height="200" class="box" stroke="#e2e8f0" stroke-width="1.5" />
-    <text x="100" y="40" text-anchor="middle" font-family="Inter, sans-serif" font-weight="900" font-size="20" fill="#ffffff">Next.js 14</text>
-    <text x="100" y="60" text-anchor="middle" class="text-sub">App Router &amp; Edge</text>
-    
-    <!-- Middleware Box -->
-    <rect x="20" y="80" width="160" height="40" rx="8" fill="rgba(255,255,255,0.05)" stroke="#64748b" />
-    <text x="100" y="105" text-anchor="middle" class="text-sub" fill="#e2e8f0">Edge Middleware</text>
-    
-    <!-- API Routes Box -->
-    <rect x="20" y="135" width="160" height="40" rx="8" fill="rgba(255,255,255,0.05)" stroke="#64748b" />
-    <text x="100" y="160" text-anchor="middle" class="text-sub" fill="#e2e8f0">/api Backend Routes</text>
-  </g>
+  <!-- NEXT.JS APP ROUTER (x=400, y=250) -->
+  <rect x="400" y="250" width="200" height="200" class="box" stroke="#e2e8f0" stroke-width="1.5" />
+  <text x="500" y="290" text-anchor="middle" font-family="Inter, sans-serif" font-weight="900" font-size="20" fill="#ffffff">Next.js 14</text>
+  <text x="500" y="310" text-anchor="middle" class="text-sub">App Router &amp; Edge</text>
+  <rect x="420" y="330" width="160" height="40" rx="8" fill="rgba(255,255,255,0.05)" stroke="#64748b" />
+  <text x="500" y="355" text-anchor="middle" class="text-sub" fill="#e2e8f0">Edge Middleware</text>
+  <rect x="420" y="385" width="160" height="40" rx="8" fill="rgba(255,255,255,0.05)" stroke="#64748b" />
+  <text x="500" y="410" text-anchor="middle" class="text-sub" fill="#e2e8f0">/api Backend Routes</text>
 
-  <!-- SUPABASE DB & AUTH -->
-  <g transform="translate(730, 210)">
-    <rect width="200" height="300" class="box" stroke="#10b981" filter="url(#glow-emerald)" />
-    <text x="100" y="40" text-anchor="middle" font-family="Inter, sans-serif" font-weight="900" font-size="22" fill="#34d399">Supabase</text>
-    <text x="100" y="60" text-anchor="middle" class="text-sub">Backend as a Service</text>
-    
-    <!-- Auth Box -->
-    <rect x="20" y="90" width="160" height="70" rx="8" fill="rgba(16,185,129,0.1)" stroke="#34d399" />
-    <text x="100" y="115" text-anchor="middle" class="text-title" font-size="16">Authentication</text>
-    <text x="100" y="135" text-anchor="middle" class="text-sub" font-size="11">Standard &amp; Service Role</text>
-    <text x="100" y="150" text-anchor="middle" class="text-sub" font-size="10" fill="#6ee7b7">(Teacher Onboarding)</text>
+  <!-- SUPABASE DB & AUTH (x=730, y=210) -->
+  <rect x="730" y="210" width="200" height="300" class="box" stroke="#10b981" />
+  <text x="830" y="250" text-anchor="middle" font-family="Inter, sans-serif" font-weight="900" font-size="22" fill="#34d399">Supabase</text>
+  <text x="830" y="270" text-anchor="middle" class="text-sub">Backend as a Service</text>
+  <rect x="750" y="300" width="160" height="70" rx="8" fill="rgba(16,185,129,0.1)" stroke="#34d399" />
+  <text x="830" y="325" text-anchor="middle" class="text-title" font-size="16">Authentication</text>
+  <text x="830" y="345" text-anchor="middle" class="text-sub" font-size="11">Standard &amp; Service Role</text>
+  <text x="830" y="360" text-anchor="middle" class="text-sub" font-size="10" fill="#6ee7b7">(Teacher Onboarding)</text>
+  <rect x="750" y="390" width="160" height="100" rx="8" fill="rgba(16,185,129,0.1)" stroke="#34d399" />
+  <text x="830" y="415" text-anchor="middle" class="text-title" font-size="16">PostgreSQL DB</text>
+  <text x="830" y="435" text-anchor="middle" class="text-sub" font-size="11">Multi-tenant (school_id)</text>
+  <rect x="760" y="450" width="65" height="20" rx="4" fill="#047857" />
+  <text x="792.5" y="464" text-anchor="middle" class="text-badge" font-size="9">schools</text>
+  <rect x="835" y="450" width="65" height="20" rx="4" fill="#047857" />
+  <text x="867.5" y="464" text-anchor="middle" class="text-badge" font-size="9">profiles</text>
+  <rect x="760" y="475" width="65" height="20" rx="4" fill="#047857" />
+  <text x="792.5" y="489" text-anchor="middle" class="text-badge" font-size="9">students</text>
+  <rect x="835" y="475" width="65" height="20" rx="4" fill="#047857" />
+  <text x="867.5" y="489" text-anchor="middle" class="text-badge" font-size="9">logs</text>
 
-    <!-- DB Box -->
-    <rect x="20" y="180" width="160" height="100" rx="8" fill="rgba(16,185,129,0.1)" stroke="#34d399" />
-    <text x="100" y="205" text-anchor="middle" class="text-title" font-size="16">PostgreSQL DB</text>
-    <text x="100" y="225" text-anchor="middle" class="text-sub" font-size="11">Multi-tenant (school_id)</text>
-    
-    <!-- DB Table pills -->
-    <rect x="30" y="240" width="65" height="20" rx="4" fill="#047857" />
-    <text x="62.5" y="254" text-anchor="middle" class="text-badge" font-size="9">schools</text>
-    <rect x="105" y="240" width="65" height="20" rx="4" fill="#047857" />
-    <text x="137.5" y="254" text-anchor="middle" class="text-badge" font-size="9">profiles</text>
-    
-    <rect x="30" y="265" width="65" height="20" rx="4" fill="#047857" />
-    <text x="62.5" y="279" text-anchor="middle" class="text-badge" font-size="9">students</text>
-    <rect x="105" y="265" width="65" height="20" rx="4" fill="#047857" />
-    <text x="137.5" y="279" text-anchor="middle" class="text-badge" font-size="9">logs</text>
-  </g>
-
-  <!-- EXTERNAL SERVICES -->
-  <g class="anim-float-d1" transform="translate(400, 550)">
-    <rect width="200" height="80" class="box" stroke="#fbbf24" filter="url(#glow-amber)" />
-    <text x="100" y="30" text-anchor="middle" class="text-title" font-size="16">External APIs</text>
-    <text x="100" y="50" text-anchor="middle" class="text-sub" font-size="12">Gemini AI (Announcements)</text>
-    <text x="100" y="68" text-anchor="middle" class="text-sub" font-size="12">WhatsApp (Broadcasts)</text>
-  </g>
+  <!-- EXTERNAL SERVICES (x=400, y=550) -->
+  <rect x="400" y="550" width="200" height="80" class="box" stroke="#fbbf24" />
+  <text x="500" y="580" text-anchor="middle" class="text-title" font-size="16">External APIs</text>
+  <text x="500" y="600" text-anchor="middle" class="text-sub" font-size="12">Gemini AI (Announcements)</text>
+  <text x="500" y="618" text-anchor="middle" class="text-sub" font-size="12">WhatsApp (Broadcasts)</text>
 
 </svg>
