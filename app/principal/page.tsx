@@ -20,6 +20,20 @@ export default async function PrincipalDashboard({ searchParams }: { searchParam
   const schoolData = Array.isArray(profile.schools) ? profile.schools[0] : profile.schools;
   const schoolName = schoolData?.name || 'School';
 
+  // Fetch quotas (fallback to defaults if columns are missing)
+  let maxStudents = 100;
+  let maxTeachers = 10;
+  const { data: schoolDetails, error: schoolErr } = await supabase
+    .from('schools')
+    .select('max_students, max_teachers')
+    .eq('id', profile.school_id)
+    .single();
+    
+  if (schoolDetails && !schoolErr) {
+    maxStudents = schoolDetails.max_students ?? 100;
+    maxTeachers = schoolDetails.max_teachers ?? 10;
+  }
+
   // Fetch school stats
   const { count: studentCount } = await supabase
     .from('students')
@@ -66,6 +80,8 @@ export default async function PrincipalDashboard({ searchParams }: { searchParam
       profileName={profile.name}
       studentCount={studentCount || 0}
       teacherCount={teacherCount || 0}
+      maxStudents={maxStudents}
+      maxTeachers={maxTeachers}
       classes={combinedClasses}
       teacherAttendance={teacherAttendance || []}
       initialDate={selectedDate}

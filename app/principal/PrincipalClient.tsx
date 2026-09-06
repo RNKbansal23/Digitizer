@@ -10,14 +10,16 @@ interface PrincipalClientProps {
   profileName: string;
   studentCount: number;
   teacherCount: number;
+  maxStudents: number;
+  maxTeachers: number;
   classes: any[];
   teacherAttendance: any[];
   initialDate: string;
 }
 
-export default function PrincipalClient({ schoolId, schoolName, profileName, studentCount, teacherCount, classes, teacherAttendance, initialDate }: PrincipalClientProps) {
+export default function PrincipalClient({ schoolId, schoolName, profileName, studentCount, teacherCount, maxStudents, maxTeachers, classes, teacherAttendance, initialDate }: PrincipalClientProps) {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'classes' | 'attendance'>('classes');
+  const [activeTab, setActiveTab] = useState<'classes' | 'attendance' | 'quota'>('classes');
   
   // Add Class Modal State
   const [showAddClass, setShowAddClass] = useState(false);
@@ -40,6 +42,29 @@ export default function PrincipalClient({ schoolId, schoolName, profileName, stu
       alert('Error adding class');
     }
     setIsSubmitting(false);
+  };
+
+  // Create Teacher State
+  const [newTeacher, setNewTeacher] = useState({ name: '', email: '', password: '', class_id: '' });
+  const [isCreatingTeacher, setIsCreatingTeacher] = useState(false);
+
+  const handleCreateTeacher = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsCreatingTeacher(true);
+    const res = await fetch('/api/teachers', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...newTeacher, school_id: schoolId })
+    });
+    if (res.ok) {
+      alert('Teacher account created successfully!');
+      setNewTeacher({ name: '', email: '', password: '', class_id: '' });
+      router.refresh();
+    } else {
+      const data = await res.json();
+      alert(data.error || 'Failed to create teacher account');
+    }
+    setIsCreatingTeacher(false);
   };
 
   return (
@@ -99,6 +124,12 @@ export default function PrincipalClient({ schoolId, schoolName, profileName, stu
               className={`px-5 py-2.5 rounded-xl font-semibold text-sm transition-all min-h-[40px] md:min-h-[36px] ${activeTab === 'attendance' ? 'bg-white text-indigo-700 shadow-sm border border-gray-200/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
             >
               Teacher Attendance
+            </button>
+            <button 
+              onClick={() => setActiveTab('quota')} 
+              className={`px-5 py-2.5 rounded-xl font-semibold text-sm transition-all min-h-[40px] md:min-h-[36px] ${activeTab === 'quota' ? 'bg-white text-indigo-700 shadow-sm border border-gray-200/50' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
+            >
+              Manage Quota & Teachers
             </button>
           </div>
         </div>
@@ -191,6 +222,77 @@ export default function PrincipalClient({ schoolId, schoolName, profileName, stu
                 )}
               </div>
             </>
+          )}
+
+          {activeTab === 'quota' && (
+            <div className="p-4 md:p-6 space-y-8">
+              {/* Quota Progress Bars */}
+              <div>
+                <h2 className="text-xl font-bold text-slate-900 tracking-tight mb-6">School Resource Quota</h2>
+                
+                <div className="space-y-6">
+                  {/* Students Quota */}
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="font-semibold text-slate-700 text-sm">Student Licenses</span>
+                      <span className="text-sm font-bold text-slate-900">{studentCount} <span className="text-slate-400 font-medium">/ {maxStudents}</span></span>
+                    </div>
+                    <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
+                      <div className={`h-full rounded-full ${studentCount >= maxStudents ? 'bg-coral-500' : 'bg-indigo-500'}`} style={{ width: `${Math.min(100, (studentCount / maxStudents) * 100)}%` }}></div>
+                    </div>
+                  </div>
+
+                  {/* Teachers Quota */}
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="font-semibold text-slate-700 text-sm">Teacher Licenses</span>
+                      <span className="text-sm font-bold text-slate-900">{teacherCount} <span className="text-slate-400 font-medium">/ {maxTeachers}</span></span>
+                    </div>
+                    <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
+                      <div className={`h-full rounded-full ${teacherCount >= maxTeachers ? 'bg-coral-500' : 'bg-amber-500'}`} style={{ width: `${Math.min(100, (teacherCount / maxTeachers) * 100)}%` }}></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <hr className="border-gray-100" />
+
+              {/* Create Teacher Form */}
+              <div>
+                <h2 className="text-xl font-bold text-slate-900 tracking-tight mb-2">Onboard New Teacher</h2>
+                <p className="text-sm text-slate-500 mb-6">Create an account for a new teacher so they can log in.</p>
+                
+                {teacherCount >= maxTeachers ? (
+                  <div className="bg-coral-50 text-coral-600 p-4 rounded-xl border border-coral-100 font-medium text-sm">
+                    You have reached your maximum teacher limit ({maxTeachers}). Please contact support to upgrade your quota.
+                  </div>
+                ) : (
+                  <form onSubmit={handleCreateTeacher} className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl bg-slate-50/50 p-6 rounded-2xl border border-slate-100">
+                    <div className="col-span-1 sm:col-span-2">
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Teacher Name</label>
+                      <input type="text" required value={newTeacher.name} onChange={e => setNewTeacher({...newTeacher, name: e.target.value})} className="w-full border border-gray-200 bg-white p-3 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 text-sm" placeholder="e.g. Mr. Sharma" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Email Address</label>
+                      <input type="email" required value={newTeacher.email} onChange={e => setNewTeacher({...newTeacher, email: e.target.value})} className="w-full border border-gray-200 bg-white p-3 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 text-sm" placeholder="teacher@school.com" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Temporary Password</label>
+                      <input type="text" required minLength={6} value={newTeacher.password} onChange={e => setNewTeacher({...newTeacher, password: e.target.value})} className="w-full border border-gray-200 bg-white p-3 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 text-sm" placeholder="e.g. pass1234" />
+                    </div>
+                    <div className="col-span-1 sm:col-span-2">
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Assign to Class (Optional)</label>
+                      <input type="text" value={newTeacher.class_id} onChange={e => setNewTeacher({...newTeacher, class_id: e.target.value})} className="w-full border border-gray-200 bg-white p-3 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 text-sm" placeholder="e.g. 5A" />
+                    </div>
+                    <div className="col-span-1 sm:col-span-2 mt-2">
+                      <button type="submit" disabled={isCreatingTeacher} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl transition-all duration-200 active:scale-[0.98] disabled:opacity-70 shadow-sm shadow-indigo-600/20 text-sm">
+                        {isCreatingTeacher ? 'Creating Account...' : 'Create Teacher Account'}
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
+            </div>
           )}
         </div>
       </div>
