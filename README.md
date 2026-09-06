@@ -12,8 +12,9 @@ School Saathi is a multi-tenant, modern school digitization dashboard designed f
 
 ### Principal Dashboard
 - **School-Wide Analytics**: High-level overview of total classes, active teachers, and total students.
-- **Class Directory**: A structured view of all classes in the school.
+- **Class Directory**: A structured view of all classes in the school with real-time class strength counters.
 - **Teacher View Access**: Principals can click into any specific class to see the exact dashboard the teacher sees (read-only monitoring).
+- **Manage Quota & Teachers**: Visually track how many student/teacher licenses the school has used. Principals can instantly onboard new teachers, creating their accounts and temporary passwords directly from the dashboard.
 
 ### Parent Portal (Passwordless)
 - **Direct Access**: Parents access a unique, secure link (e.g., `/s/[studentId]`) without needing a password.
@@ -27,20 +28,40 @@ School Saathi is a multi-tenant, modern school digitization dashboard designed f
 
 ---
 
-## 🏗️ Project Structure & Architecture
+## 🔒 Authentication & Authorization Architecture
+
+School Saathi handles authentication using **Supabase Auth** and Next.js Edge Middleware, catering to three distinct user types:
+
+1. **Parents (Passwordless Auth)**
+   - Parents do not have user accounts. They are authenticated purely via a secure, unguessable URL parameter (`/s/[studentId]`).
+   - This removes the friction of parents forgetting passwords.
+
+2. **Teachers (Standard Auth)**
+   - Teachers log in via `/login` with an email and password.
+   - Upon login, the Next.js **Middleware** reads their profile. If their `role` is `teacher`, they are automatically routed to `/teacher`.
+   - Teachers are bound to a specific `school_id` and (optionally) a `class_id`, restricting their data access.
+
+3. **Principals (Admin Auth)**
+   - Principals log in via the same `/login` portal.
+   - The **Middleware** detects their `role` as `principal` and routes them to `/principal`.
+   - **Teacher Onboarding (Service Role)**: When a Principal creates a new Teacher account, the app uses a backend API route (`/api/teachers`) powered by the **`SUPABASE_SERVICE_ROLE_KEY`**. This allows the server to securely bypass normal Auth rules to invoke `supabase.auth.admin.createUser`, creating the teacher's account without logging the Principal out of their own session.
+
+---
+
+## 🏗️ Project Structure
 
 The application is built on **Next.js 14 (App Router)** and **Supabase**.
 
 ```text
 /app
- ├── /api               # Backend endpoints (Gemini AI, Announcements, Students, Logs)
+ ├── /api               # Backend endpoints (Gemini AI, Announcements, Teacher Onboarding)
  ├── /auth              # Supabase authentication and signout routes
- ├── /login             # Minimalist login page with role detection
+ ├── /login             # Minimalist login page with role detection & password toggle
  ├── /principal         # Principal dashboard & nested /class/[classId] views
  ├── /teacher           # Teacher client component and main UI
  ├── /s                 # Public-facing Parent/Student portal (/s/[studentId])
  ├── /suspended         # Kill-switch fallback page for paused schools
- ├── layout.tsx         # Root layout with PWA Manifest (School Sarthi Logo)
+ ├── layout.tsx         # Root layout with Inter font and global CSS
  └── middleware.ts      # Core Edge middleware for auth protection, role routing, and SaaS kill-switch
 ```
 
@@ -56,6 +77,7 @@ erDiagram
     schools ||--o{ students : "enrolls"
     schools ||--o{ daily_logs : "records"
     schools ||--o{ announcements : "broadcasts"
+    schools ||--o{ classes : "contains"
     
     auth_users ||--|| profiles : "links to"
     
@@ -71,6 +93,15 @@ erDiagram
         uuid id PK
         text name
         text status "active/paused"
+        int max_students "quota"
+        int max_teachers "quota"
+    }
+
+    classes {
+        uuid id PK
+        uuid school_id FK
+        text class_name
+        text teacher_name
     }
     
     students {
@@ -112,53 +143,15 @@ erDiagram
         text message
         timestamp date
     }
-    
-    fee_invoices {
-        uuid id PK
-        uuid student_id FK
-        numeric amount
-        text status "pending/paid"
-        text description
-        timestamp due_date
-    }
-
-    store_items {
-        uuid id PK
-        uuid school_id FK
-        text category "books/uniform"
-        text name
-        numeric price
-        int stock
-    }
-
-    orders {
-        uuid id PK
-        uuid student_id FK
-        uuid item_id FK
-        text status "pending/fulfilled"
-        timestamp date
-    }
-
-    students ||--o{ absences : "has"
-    daily_logs ||--o{ absences : "contains"
-    students ||--o{ leave_requests : "submits"
-    students ||--o{ fee_invoices : "billed"
-    schools ||--o{ store_items : "sells"
-    students ||--o{ orders : "places"
-    store_items ||--o{ orders : "included in"
 ```
 
 ### Table Relationships (How they connect)
-1. **`schools`**: The core tenant table. Every user and data point belongs to a school.
+1. **`schools`**: The core tenant table. Every user and data point belongs to a school. It also defines `max_students` and `max_teachers` limits.
 2. **`profiles`**: Extends Supabase's built-in `auth.users` to store the user's role (Principal/Teacher), their assigned `class_id`, and their `school_id`.
-3. **`students`**, **`daily_logs`**, and **`announcements`** all carry a `school_id` foreign key. This ensures data isolation in the UI.
-4. **`absences`**: A junction table that links a `student_id` to a specific `log_id` (a specific day's homework/attendance record).
-5. **`leave_requests`**: Directly attached to a `student_id` so parents can submit leaves that teachers can query by class.
-
-**[Future Architecture Extensions]**
-6. **`fee_invoices`**: Linked to `students` for tracking pending/paid school fees (Fees Intimation).
-7. **`store_items`**: Linked to `schools` to represent the school's inventory of books and uniforms for sale.
-8. **`orders`**: Links `students` and `store_items` to handle commerce transactions for school dresses and books.
+3. **`classes`**: Tracks the individual classes inside a school and the assigned teacher name.
+4. **`students`**, **`daily_logs`**, and **`announcements`** all carry a `school_id` foreign key. This ensures data isolation in the UI.
+5. **`absences`**: A junction table that links a `student_id` to a specific `log_id` (a specific day's homework/attendance record).
+6. **`leave_requests`**: Directly attached to a `student_id` so parents can submit leaves that teachers can query by class.
 
 ---
 
@@ -167,7 +160,7 @@ erDiagram
 1. **Commerce & Operations Module**: 
    - **Fees Intimation**: Automated generation and tracking of student fee invoices with WhatsApp payment reminders.
    - **School Store**: E-commerce interface in the Parent Portal for selling school books, notebooks, and uniforms directly to parents.
-2. **Teacher Onboarding Flow**: Create a SuperAdmin dashboard to quickly onboard new schools, set up their `school_id`, and generate invite links for Principals.
+2. **SuperAdmin Dashboard**: Create a SuperAdmin dashboard to quickly onboard new schools, set up their `school_id`, and generate invite links for Principals.
 3. **Row Level Security (RLS)**: Enforce RLS natively in Supabase so that database queries automatically filter by the authenticated user's `school_id` at the database layer (currently handled in application logic).
 4. **Automated Analytics**: Generate weekly PDF or UI reports for Principals detailing average attendance rates, most active teachers, and chronic absenteeism.
 5. **Push Notifications**: Upgrade the Parent Portal to a fully installable PWA with Service Worker push notifications, moving away from WhatsApp dependencies.
