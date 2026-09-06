@@ -30,6 +30,8 @@ School Saathi is a multi-tenant, modern school digitization dashboard designed f
 
 ## 🔒 Authentication & Authorization Architecture
 
+![Architecture Flow](./architecture-flow.svg)
+
 School Saathi handles authentication using **Supabase Auth** and Next.js Edge Middleware, catering to three distinct user types:
 
 1. **Parents (Passwordless Auth)**
