@@ -13,11 +13,13 @@ interface PrincipalClientProps {
   maxStudents: number;
   maxTeachers: number;
   classes: any[];
+  allTeachers: any[];
+  classStrengths: Record<string, number>;
   teacherAttendance: any[];
   initialDate: string;
 }
 
-export default function PrincipalClient({ schoolId, schoolName, profileName, studentCount, teacherCount, maxStudents, maxTeachers, classes, teacherAttendance, initialDate }: PrincipalClientProps) {
+export default function PrincipalClient({ schoolId, schoolName, profileName, studentCount, teacherCount, maxStudents, maxTeachers, classes, allTeachers, classStrengths, teacherAttendance, initialDate }: PrincipalClientProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'classes' | 'attendance' | 'quota'>('classes');
   
@@ -252,6 +254,74 @@ export default function PrincipalClient({ schoolId, schoolName, profileName, stu
                       <div className={`h-full rounded-full ${teacherCount >= maxTeachers ? 'bg-coral-500' : 'bg-amber-500'}`} style={{ width: `${Math.min(100, (teacherCount / maxTeachers) * 100)}%` }}></div>
                     </div>
                   </div>
+                </div>
+              </div>
+
+              <hr className="border-gray-100" />
+
+              {/* Teachers Details Pane */}
+              <div>
+                <h2 className="text-xl font-bold text-slate-900 tracking-tight mb-4">Teachers Directory</h2>
+                <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
+                  <table className="w-full text-left text-sm">
+                    <thead className="bg-slate-50 border-b border-gray-100">
+                      <tr>
+                        <th className="px-6 py-4 font-bold text-slate-700">Name</th>
+                        <th className="px-6 py-4 font-bold text-slate-700">Assigned Class</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                      {allTeachers.map((t) => (
+                        <tr key={t.id} className="hover:bg-slate-50/50 transition-colors">
+                          <td className="px-6 py-4 font-medium text-slate-900">{t.name}</td>
+                          <td className="px-6 py-4 text-slate-500">
+                            {t.class_id ? (
+                              <span className="bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-md font-semibold text-xs border border-indigo-100/50">{t.class_id}</span>
+                            ) : (
+                              <span className="text-gray-400 italic">Unassigned</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                      {allTeachers.length === 0 && (
+                        <tr>
+                          <td colSpan={2} className="px-6 py-8 text-center text-slate-500">No teachers found.</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <hr className="border-gray-100" />
+
+              {/* Class Strength Details Pane */}
+              <div>
+                <h2 className="text-xl font-bold text-slate-900 tracking-tight mb-4">Class Strengths</h2>
+                <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
+                  <table className="w-full text-left text-sm">
+                    <thead className="bg-slate-50 border-b border-gray-100">
+                      <tr>
+                        <th className="px-6 py-4 font-bold text-slate-700">Class</th>
+                        <th className="px-6 py-4 font-bold text-slate-700">Total Students</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                      {Object.entries(classStrengths).map(([className, count]) => (
+                        <tr key={className} className="hover:bg-slate-50/50 transition-colors">
+                          <td className="px-6 py-4 font-medium text-slate-900">
+                            <span className="bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-md font-semibold text-xs border border-indigo-100/50">{className}</span>
+                          </td>
+                          <td className="px-6 py-4 text-slate-600 font-bold">{count}</td>
+                        </tr>
+                      ))}
+                      {Object.keys(classStrengths).length === 0 && (
+                        <tr>
+                          <td colSpan={2} className="px-6 py-8 text-center text-slate-500">No students found.</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
                 </div>
               </div>
 

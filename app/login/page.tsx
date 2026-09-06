@@ -2,11 +2,12 @@
 import { useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
-import { KeyRound, Mail, GraduationCap, BookOpen, Sparkles, MessageCircle } from 'lucide-react';
+import { KeyRound, Mail, GraduationCap, BookOpen, Sparkles, MessageCircle, Eye, EyeOff } from 'lucide-react';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -95,13 +96,20 @@ export default function LoginPage() {
                 <KeyRound size={18} />
               </div>
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-slate-200/60 bg-white/80 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all duration-200 min-h-[44px] text-slate-900"
+                className="w-full pl-11 pr-12 py-3.5 rounded-xl border border-slate-200/60 bg-white/80 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all duration-200 min-h-[44px] text-slate-900"
                 placeholder="••••••••"
               />
+              <button 
+                type="button" 
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
           </div>
 

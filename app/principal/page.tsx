@@ -62,6 +62,27 @@ export default async function PrincipalDashboard({ searchParams }: { searchParam
   // Merge classes
   const combinedClasses = [...(legacyClasses || []), ...(newClasses || [])];
 
+  // Fetch all students to calculate class strengths
+  const { data: allStudents } = await supabase
+    .from('students')
+    .select('class_id')
+    .eq('school_id', profile.school_id);
+    
+  const classStrengths: Record<string, number> = {};
+  if (allStudents) {
+    allStudents.forEach(s => {
+      const cid = s.class_id || 'Unassigned';
+      classStrengths[cid] = (classStrengths[cid] || 0) + 1;
+    });
+  }
+
+  // Fetch all teachers
+  const { data: allTeachers } = await supabase
+    .from('profiles')
+    .select('id, name, class_id')
+    .eq('school_id', profile.school_id)
+    .eq('role', 'teacher');
+
   // Fetch teacher attendance
   const todayStr = new Date().toISOString().split('T')[0];
   const selectedDate = searchParams.date || todayStr;
@@ -83,6 +104,8 @@ export default async function PrincipalDashboard({ searchParams }: { searchParam
       maxStudents={maxStudents}
       maxTeachers={maxTeachers}
       classes={combinedClasses}
+      allTeachers={allTeachers || []}
+      classStrengths={classStrengths}
       teacherAttendance={teacherAttendance || []}
       initialDate={selectedDate}
     />
