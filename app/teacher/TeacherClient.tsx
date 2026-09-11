@@ -35,6 +35,12 @@ export default function TeacherClient({ schoolId, classId, teacherName, schoolNa
   // New Student Form State
   const [newStudent, setNewStudent] = useState({ name: '', roll: '', parent_phone: '' });
   
+  // Parent Login State
+  const [generatingParentLoginFor, setGeneratingParentLoginFor] = useState<string | null>(null);
+  const [parentEmail, setParentEmail] = useState('');
+  const [parentPassword, setParentPassword] = useState('');
+  const [isGeneratingParent, setIsGeneratingParent] = useState(false);
+  
   // Announcement State
   const [announcement, setAnnouncement] = useState({ type: 'PTM', message: '' });
   const [aiPrompt, setAiPrompt] = useState('');
@@ -150,6 +156,26 @@ export default function TeacherClient({ schoolId, classId, teacherName, schoolNa
       setStudents([...students, data.student].sort((a, b) => a.roll - b.roll));
       setNewStudent({ name: '', roll: '', parent_phone: '' });
       alert('Student Added!');
+    }
+  };
+
+  const handleGenerateParentLogin = async (studentId: string) => {
+    if (!parentEmail || !parentPassword) return alert("Email and Password required");
+    setIsGeneratingParent(true);
+    const res = await fetch('/api/parents', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: parentEmail, password: parentPassword, student_id: studentId, school_id: schoolId })
+    });
+    const data = await res.json();
+    setIsGeneratingParent(false);
+    if (data.success) {
+      alert("Parent Login created successfully!");
+      setGeneratingParentLoginFor(null);
+      setParentEmail('');
+      setParentPassword('');
+    } else {
+      alert(data.error || "Failed to create login");
     }
   };
 
@@ -362,16 +388,55 @@ export default function TeacherClient({ schoolId, classId, teacherName, schoolNa
               </div>
               <ul className="divide-y divide-gray-50">
                 {students.map(student => (
-                  <li key={student.id} className="p-4 md:p-5 flex items-center justify-between hover:bg-gray-50/50 transition-colors">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-10 h-10 bg-[#FFF0EB] rounded-xl flex items-center justify-center text-[#FF7F50] font-black text-sm">
-                        {student.roll}
+                  <li key={student.id} className="p-4 md:p-5 flex flex-col hover:bg-gray-50/50 transition-colors gap-3 border-b border-gray-50 last:border-0">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-10 h-10 bg-[#FFF0EB] rounded-xl flex items-center justify-center text-[#FF7F50] font-black text-sm">
+                          {student.roll}
+                        </div>
+                        <div>
+                          <p className="font-bold text-slate-900 tracking-tight">{student.name}</p>
+                          <p className="text-sm text-slate-500 font-medium">{student.parent_phone}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-bold text-slate-900 tracking-tight">{student.name}</p>
-                        <p className="text-sm text-slate-500 font-medium">{student.parent_phone}</p>
-                      </div>
+                      
+                      <button 
+                        onClick={() => {
+                          setGeneratingParentLoginFor(generatingParentLoginFor === student.id ? null : student.id);
+                          setParentEmail('');
+                          setParentPassword('');
+                        }}
+                        className="text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition-colors border border-indigo-100/50"
+                      >
+                        {generatingParentLoginFor === student.id ? 'Cancel' : 'Create Login'}
+                      </button>
                     </div>
+
+                    {generatingParentLoginFor === student.id && (
+                      <div className="mt-2 p-4 bg-indigo-50/30 border border-indigo-100/50 rounded-xl flex flex-col sm:flex-row gap-3">
+                        <input 
+                          type="email" 
+                          placeholder="Parent Email" 
+                          value={parentEmail} 
+                          onChange={e => setParentEmail(e.target.value)} 
+                          className="border border-indigo-100 rounded-lg px-3 py-2 text-sm flex-1 focus:ring-2 focus:ring-indigo-500 outline-none"
+                        />
+                        <input 
+                          type="text" 
+                          placeholder="Temp Password" 
+                          value={parentPassword} 
+                          onChange={e => setParentPassword(e.target.value)} 
+                          className="border border-indigo-100 rounded-lg px-3 py-2 text-sm flex-1 focus:ring-2 focus:ring-indigo-500 outline-none"
+                        />
+                        <button 
+                          onClick={() => handleGenerateParentLogin(student.id)}
+                          disabled={isGeneratingParent}
+                          className="bg-indigo-600 text-white rounded-lg px-4 py-2 font-bold text-sm hover:bg-indigo-700 disabled:opacity-50 transition-all"
+                        >
+                          {isGeneratingParent ? 'Creating...' : 'Save'}
+                        </button>
+                      </div>
+                    )}
                   </li>
                 ))}
               </ul>

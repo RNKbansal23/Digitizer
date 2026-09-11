@@ -18,7 +18,7 @@ export default function LoginPage() {
     setError(null);
     const supabase = createClient();
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({
+    const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -26,8 +26,21 @@ export default function LoginPage() {
     if (signInError) {
       setError(signInError.message);
       setLoading(false);
-    } else {
-      router.push('/teacher');
+    } else if (authData.user) {
+      // Fetch profile role to determine where to route
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role, student_id')
+        .eq('id', authData.user.id)
+        .single();
+        
+      if (profile?.role === 'principal') {
+        router.push('/principal');
+      } else if (profile?.role === 'parent' && profile.student_id) {
+        router.push(`/s/${profile.student_id}`);
+      } else {
+        router.push('/teacher');
+      }
       router.refresh();
     }
   };
