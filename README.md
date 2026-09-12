@@ -153,7 +153,7 @@ erDiagram
 3. **`classes`**: Tracks the individual classes inside a school and the assigned teacher name.
 4. **`students`**, **`daily_logs`**, and **`announcements`** all carry a `school_id` foreign key. This ensures data isolation in the UI.
 5. **`absences`**: A junction table that links a `student_id` to a specific `log_id` (a specific day's homework/attendance record).
-6. **`leave_requests`**: Directly attached to a `student_id` so parents can submit leaves that teachers can query by class.
+6. **`leave_requests`**: Directly attached to a `student_id` so parents can submit leaves that teachers can query by class AND MAKE THEM SEPRATE
 
 ---
 
